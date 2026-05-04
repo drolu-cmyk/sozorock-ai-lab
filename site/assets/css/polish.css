@@ -164,6 +164,7 @@
     padding-left: 20px;
     padding-right: 20px;
     padding-top: 118px;
+    overflow: hidden;
   }
 
   .section::before {
@@ -188,6 +189,29 @@
     backdrop-filter: blur(12px);
   }
 
+  h1,
+  h2 {
+    letter-spacing: -.055em;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  h1 {
+    font-size: clamp(58px, 17.2vw, 78px);
+    line-height: .86;
+  }
+
+  h2 {
+    font-size: clamp(43px, 12.5vw, 64px);
+    line-height: .88;
+  }
+
+  .outcome-copy h2 {
+    font-size: clamp(39px, 11.1vw, 56px);
+    letter-spacing: -.06em;
+  }
+
   .program-cards {
     grid-template-columns: 1fr;
   }
@@ -208,33 +232,120 @@
   }
 
   .hero-stage {
-    min-height: 455px;
+    min-height: 520px;
+  }
+
+  .hero-stage .paper-card,
+  .hero-stage .blue-book,
+  .hero-stage .orange-note {
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.15;
+    max-width: 170px;
   }
 
   .card-one {
-    left: 2%;
-    bottom: 9%;
+    left: 4%;
+    bottom: 4%;
+    z-index: 5;
+    transform: scale(.78) rotate(-5deg);
   }
 
   .card-two {
-    right: 3%;
-    bottom: 38%;
+    right: 1%;
+    bottom: 46%;
+    z-index: 4;
+    transform: scale(.76) rotate(7deg);
   }
 
   .orange-note {
     right: 0;
+    bottom: 18%;
+    z-index: 6;
+    transform: scale(.74) rotate(-3deg);
+  }
+
+  .blue-book {
+    left: 38%;
+    right: auto;
     bottom: 2%;
+    z-index: 3;
+    transform: scale(.72) rotate(-8deg);
   }
 
-  .blue-book {
-    right: 34%;
-    bottom: 8%;
+  .audience-board {
+    padding-bottom: 116px;
   }
 
-  .card-two,
-  .orange-note,
-  .blue-book {
-    transform: scale(.82) rotate(-2deg);
+  .lab-note {
+    left: 24px;
+    right: auto;
+    bottom: 22px;
+    width: calc(100% - 48px);
+    transform: rotate(-2deg);
+    font-size: 13px;
+    padding: 16px;
+  }
+
+  .map-system {
+    min-height: 620px;
+  }
+
+  .node {
+    font-size: 10.5px;
+    padding: 10px 12px;
+    max-width: 150px;
+    line-height: 1.12;
+  }
+
+  .community {
+    left: 45%;
+    bottom: 6%;
+  }
+
+  .institutions {
+    right: 7%;
+    top: 58%;
+  }
+
+  .public-sector {
+    right: 20%;
+    top: 43%;
+  }
+
+  .outcomes {
+    background: linear-gradient(180deg, #fffaf0 0 100%);
+  }
+
+  .outcome-copy {
+    position: relative;
+    z-index: 2;
+  }
+
+  .outcome-copy .button {
+    position: relative;
+    z-index: 3;
+  }
+
+  .outcome-wall {
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    margin-top: 30px;
+  }
+
+  .outcome-wall article {
+    min-height: auto;
+    padding: 24px 20px;
+  }
+
+  .outcome-wall i {
+    font-size: 42px;
+    margin-bottom: 18px;
+  }
+
+  .civic-photo-strip {
+    display: none;
   }
 
   .site-footer {
@@ -268,6 +379,18 @@
     left: 16px;
   }
 
+  h1 {
+    font-size: clamp(52px, 15.2vw, 64px);
+  }
+
+  h2 {
+    font-size: clamp(38px, 11vw, 54px);
+  }
+
+  .outcome-copy h2 {
+    font-size: clamp(35px, 10.1vw, 47px);
+  }
+
   .lede,
   .manifest-copy p,
   .ecosystem-copy p,
@@ -279,5 +402,27 @@
 
   .program-cards h3 {
     font-size: clamp(31px, 11vw, 42px);
+  }
+
+  .hero-stage {
+    min-height: 500px;
+  }
+
+  .blue-book {
+    left: 34%;
+  }
+
+  .map-system {
+    min-height: 660px;
+  }
+
+  .institutions {
+    right: 4%;
+    top: 56%;
+  }
+
+  .community {
+    left: 36%;
+    bottom: 4%;
   }
 }
