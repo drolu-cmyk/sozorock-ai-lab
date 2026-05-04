@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+<title>SozoRock AI Lab mark</title>
+<desc>A civic AI lab mark built from radiating blue lines and an orange signal point.</desc>
+<rect width="128" height="128" rx="28" fill="#F7F1E7"/>
+<g fill="none" stroke="#0B4FE8" stroke-width="8" stroke-linecap="round">
+<path d="M64 18v26M64 84v26M18 64h26M84 64h26M31 31l18 18M79 79l18 18M97 31L79 49M49 79 31 97"/>
+<path d="M64 44a20 20 0 1 1 0 40 20 20 0 0 1 0-40Z" stroke-width="6"/>
+</g>
+<circle cx="97" cy="31" r="8" fill="#FF6A3D"/>
+</svg>

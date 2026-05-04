@@ -1,0 +1,14 @@
+{
+  "name": "sozorock-ai-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static AWS-ready landing page for SozoRock AI Lab.",
+  "scripts": {
+    "serve": "npx serve site -l 4173",
+    "build": "bash scripts/build.sh",
+    "deploy:aws": "bash scripts/deploy-aws.sh"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
