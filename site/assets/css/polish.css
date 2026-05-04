@@ -148,7 +148,46 @@
   }
 }
 
+/* Mobile: remove the desktop side rail and replace it with a compact section badge. */
 @media (max-width: 720px) {
+  .rail {
+    display: none;
+  }
+
+  .section,
+  .hero,
+  .split-manifest,
+  .ecosystem,
+  .programs,
+  .outcomes,
+  .final-cta {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 118px;
+  }
+
+  .section::before {
+    content: attr(data-section) " / 08";
+    position: absolute;
+    top: 86px;
+    left: 20px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 250, 240, .78);
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    backdrop-filter: blur(12px);
+  }
+
   .program-cards {
     grid-template-columns: 1fr;
   }
@@ -161,9 +200,84 @@
     padding: 16px;
   }
 
+  .hero-stage,
+  .audience-board,
+  .map-system,
+  .closing-stage {
+    margin-top: 30px;
+  }
+
+  .hero-stage {
+    min-height: 455px;
+  }
+
+  .card-one {
+    left: 2%;
+    bottom: 9%;
+  }
+
+  .card-two {
+    right: 3%;
+    bottom: 38%;
+  }
+
+  .orange-note {
+    right: 0;
+    bottom: 2%;
+  }
+
+  .blue-book {
+    right: 34%;
+    bottom: 8%;
+  }
+
   .card-two,
   .orange-note,
   .blue-book {
-    transform: scale(.86) rotate(-2deg);
+    transform: scale(.82) rotate(-2deg);
+  }
+
+  .site-footer {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 430px) {
+  .site-header {
+    left: 8px;
+    right: 8px;
+    padding-left: 12px;
+  }
+
+  .brand {
+    font-size: 11px;
+  }
+
+  .section,
+  .hero,
+  .split-manifest,
+  .ecosystem,
+  .programs,
+  .outcomes,
+  .final-cta {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .section::before {
+    left: 16px;
+  }
+
+  .lede,
+  .manifest-copy p,
+  .ecosystem-copy p,
+  .program-copy p,
+  .outcome-copy p,
+  .final-copy p {
+    font-size: 16px;
+  }
+
+  .program-cards h3 {
+    font-size: clamp(31px, 11vw, 42px);
   }
 }
