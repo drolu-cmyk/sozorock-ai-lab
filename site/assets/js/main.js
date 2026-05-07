@@ -29,5 +29,12 @@ const navObserver = new IntersectionObserver((entries) => {
 sectionByNav.forEach((section) => navObserver.observe(section));
 
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener('click', () => header?.classList.remove('open'));
+  anchor.addEventListener('click', (event) => {
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (!target) return;
+    event.preventDefault();
+    header?.classList.remove('open');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  });
 });
