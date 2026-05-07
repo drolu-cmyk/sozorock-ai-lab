@@ -9,9 +9,11 @@ mkdir -p dist dist-ai-lab-prefix/ai-lab
 cp -R site/. dist/
 cp -R site/. dist-ai-lab-prefix/ai-lab/
 
-# 404 page for CloudFront custom error responses.
+mkdir -p dist/assets/img dist-ai-lab-prefix/ai-lab/assets/img
+cp design/reference-collages/sozorock-ai-lab-reference-grid-01.png dist/assets/img/social-preview.png
+cp design/reference-collages/sozorock-ai-lab-reference-grid-01.png dist-ai-lab-prefix/ai-lab/assets/img/social-preview.png
+
 cp site/index.html dist/404.html
 cp site/index.html dist-ai-lab-prefix/ai-lab/404.html
 
-echo "Built dist/ for root/subdomain hosting."
-echo "Built dist-ai-lab-prefix/ai-lab/ for www.sozorockfoundation.org/ai-lab/ hosting."
+echo "Built dist outputs."
