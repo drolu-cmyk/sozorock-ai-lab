@@ -38,8 +38,21 @@ jobs:
             --exclude "assets/*" \
             --cache-control "no-cache,no-store,must-revalidate"
 
-      - name: Invalidate CloudFront
+      - name: Invalidate CloudFront and wait
         run: |
-          aws cloudfront create-invalidation \
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "CloudFront invalidation created: $INVALIDATION_ID"
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --id "$INVALIDATION_ID"
+          echo "CloudFront invalidation completed: $INVALIDATION_ID"
+
+      - name: Smoke test deployed site
+        if: ${{ vars.AI_LAB_DOMAIN != '' }}
+        run: |
+          curl -fsSI "https://${{ vars.AI_LAB_DOMAIN }}/" >/dev/null
+          curl -fsSI "https://${{ vars.AI_LAB_DOMAIN }}/privacy" >/dev/null

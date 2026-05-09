@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Private S3 + CloudFront static hosting for SozoRock AI Lab.
+Description: Private S3 + CloudFront static hosting and application API for SozoRock AI Lab.
 
 Parameters:
   SiteBucketName:
@@ -17,6 +17,23 @@ Parameters:
     Type: String
     Default: ''
     Description: Optional Route 53 hosted zone ID for creating DNS alias.
+  SenderEmail:
+    Type: String
+    Default: contact@sozorockfoundation.org
+    Description: Verified SES sender email address.
+  InternalNotificationEmail:
+    Type: String
+    Default: contact@sozorockfoundation.org
+    Description: Internal recipient for new AI Lab interest notifications.
+  FullApplicationUrl:
+    Type: String
+    Default: ''
+    Description: Optional full application URL sent through the protected selected-applicant endpoint.
+  AdminApiSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Optional shared secret for POST /api/applications/selected.
 
 Conditions:
   HasDomain: !Not [!Equals [!Ref DomainName, '']]
@@ -43,6 +60,189 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
+  ApplicationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  ApplicationsFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: applications-function-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt ApplicationsTable.Arn
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: '*'
+
+  ApplicationsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Role: !GetAtt ApplicationsFunctionRole.Arn
+      Timeout: 10
+      MemorySize: 256
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ApplicationsTable
+          SENDER_EMAIL: !Ref SenderEmail
+          INTERNAL_EMAIL: !Ref InternalNotificationEmail
+          FULL_APPLICATION_URL: !Ref FullApplicationUrl
+          ADMIN_API_SECRET: !Ref AdminApiSecret
+      Code:
+        ZipFile: |
+          const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+          const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
+          const crypto = require('crypto');
+          const ddb = new DynamoDBClient({});
+          const ses = new SESClient({});
+          const headers = {
+            'content-type': 'application/json',
+            'access-control-allow-origin': '*',
+            'access-control-allow-methods': 'POST,OPTIONS',
+            'access-control-allow-headers': 'content-type,x-admin-secret'
+          };
+          const ok = (body, statusCode = 200) => ({ statusCode, headers, body: JSON.stringify(body) });
+          const text = value => String(value || '').trim();
+          async function sendEmail(to, subject, body) {
+            if (!process.env.SENDER_EMAIL) return;
+            await ses.send(new SendEmailCommand({
+              Source: process.env.SENDER_EMAIL,
+              Destination: { ToAddresses: [to] },
+              Message: {
+                Subject: { Data: subject },
+                Body: { Text: { Data: body } }
+              }
+            }));
+          }
+          async function handleStart(body) {
+            const firstName = text(body.firstName);
+            const lastName = text(body.lastName);
+            const email = text(body.email).toLowerCase();
+            const build = text(body.build);
+            if (!firstName || !lastName || !email || !build || body.consent !== true) return ok({ error: 'Missing required fields.' }, 400);
+            const id = `ailab-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+            const submittedAt = new Date().toISOString();
+            await ddb.send(new PutItemCommand({
+              TableName: process.env.TABLE_NAME,
+              Item: {
+                id: { S: id },
+                type: { S: 'interest_start' },
+                status: { S: 'submitted' },
+                firstName: { S: firstName },
+                lastName: { S: lastName },
+                email: { S: email },
+                build: { S: build },
+                consent: { BOOL: true },
+                source: { S: text(body.source) || 'sozorock-ai-lab-website' },
+                cohort: { S: text(body.cohort) || 'next' },
+                submittedAt: { S: submittedAt }
+              }
+            }));
+            await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. Selected applicants will receive the full application and next steps by email.\n\nThe SozoRock Foundation Inc.`);
+            if (process.env.INTERNAL_EMAIL) {
+              await sendEmail(process.env.INTERNAL_EMAIL, `New AI Lab interest: ${firstName} ${lastName}`, `New SozoRock AI Lab interest submission\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nSubmission ID: ${id}\n\nWork to improve:\n${build}\n\nTo send the full application to a selected applicant, POST to /api/applications/selected with x-admin-secret and email, firstName, and optional applicationUrl.`);
+            }
+            return ok({ ok: true, id });
+          }
+          async function handleSelected(event, body) {
+            const headerSecret = event.headers?.['x-admin-secret'] || event.headers?.['X-Admin-Secret'];
+            if (!process.env.ADMIN_API_SECRET || headerSecret !== process.env.ADMIN_API_SECRET) return ok({ error: 'Unauthorized.' }, 401);
+            const email = text(body.email).toLowerCase();
+            const firstName = text(body.firstName) || 'there';
+            const applicationUrl = text(body.applicationUrl) || text(process.env.FULL_APPLICATION_URL);
+            if (!email || !applicationUrl) return ok({ error: 'Missing email or applicationUrl.' }, 400);
+            await sendEmail(email, 'Your SozoRock AI Lab full application', `Hi ${firstName},\n\nYou have been selected to complete the full SozoRock AI Lab application.\n\nFull application: ${applicationUrl}\n\nThe SozoRock Foundation Inc.`);
+            return ok({ ok: true });
+          }
+          exports.handler = async (event) => {
+            if (event.requestContext?.http?.method === 'OPTIONS') return ok({ ok: true });
+            let body = {};
+            try { body = event.body ? JSON.parse(event.body) : {}; } catch (error) { return ok({ error: 'Invalid JSON.' }, 400); }
+            const path = event.rawPath || event.requestContext?.http?.path || '';
+            if (path.endsWith('/api/applications/start')) return handleStart(body);
+            if (path.endsWith('/api/applications/selected')) return handleSelected(event, body);
+            return ok({ error: 'Not found.' }, 404);
+          };
+
+  ApplicationsHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-applications-api'
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: ['*']
+        AllowMethods: [POST, OPTIONS]
+        AllowHeaders: ['content-type', 'x-admin-secret']
+
+  ApplicationsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApplicationsFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  ApplicationStartRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      RouteKey: 'POST /api/applications/start'
+      Target: !Sub 'integrations/${ApplicationsIntegration}'
+
+  ApplicationSelectedRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      RouteKey: 'POST /api/applications/selected'
+      Target: !Sub 'integrations/${ApplicationsIntegration}'
+
+  ApplicationsStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  ApplicationsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApplicationsFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApplicationsHttpApi}/*/*/api/applications/*'
+
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
@@ -52,6 +252,24 @@ Resources:
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
+
+  UrlRewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub '${AWS::StackName}-url-rewrite'
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Rewrite extensionless static routes to index.html.
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.indexOf('/api/') === 0) return request;
+          if (uri.endsWith('/')) request.uri = uri + 'index.html';
+          else if (uri.indexOf('.') === -1) request.uri = uri + '/index.html';
+          return request;
+        }
 
   SecurityHeadersPolicy:
     Type: AWS::CloudFront::ResponseHeadersPolicy
@@ -81,7 +299,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        Comment: SozoRock AI Lab static website
+        Comment: SozoRock AI Lab static website and application API
         DefaultRootObject: index.html
         HttpVersion: http2and3
         PriceClass: PriceClass_100
@@ -101,6 +319,34 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: ''
             OriginAccessControlId: !GetAtt OriginAccessControl.Id
+          - Id: ApplicationsApiOrigin
+            DomainName: !Sub '${ApplicationsHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: ApplicationsApiOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            CachedMethods: [GET, HEAD, OPTIONS]
+            Compress: true
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ForwardedValues:
+              QueryString: true
+              Headers:
+                - Origin
+                - Access-Control-Request-Method
+                - Access-Control-Request-Headers
+                - Content-Type
+                - Accept
+                - X-Admin-Secret
+              Cookies:
+                Forward: none
         DefaultCacheBehavior:
           TargetOriginId: SiteBucketOrigin
           ViewerProtocolPolicy: redirect-to-https
@@ -108,6 +354,9 @@ Resources:
           CachedMethods: [GET, HEAD, OPTIONS]
           Compress: true
           ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt UrlRewriteFunction.FunctionMetadata.FunctionARN
           ForwardedValues:
             QueryString: false
             Cookies:
@@ -157,3 +406,7 @@ Outputs:
     Value: !GetAtt CloudFrontDistribution.DomainName
   CustomDomain:
     Value: !If [HasDomain, !Ref DomainName, '']
+  ApplicationsApiEndpoint:
+    Value: !Sub 'https://${ApplicationsHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+  ApplicationsTableName:
+    Value: !Ref ApplicationsTable
