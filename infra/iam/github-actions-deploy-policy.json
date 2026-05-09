@@ -4,29 +4,54 @@
     {
       "Sid": "AllowSiteBucketDeploy",
       "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket"
-      ],
+      "Action": ["s3:ListBucket"],
       "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME"
     },
     {
       "Sid": "AllowSiteObjectDeploy",
       "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:GetObject",
-        "s3:PutObjectTagging"
-      ],
+      "Action": ["s3:PutObject", "s3:DeleteObject", "s3:GetObject", "s3:PutObjectTagging"],
       "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
     },
     {
-      "Sid": "AllowCloudFrontInvalidation",
+      "Sid": "AllowCloudFrontDeploy",
+      "Effect": "Allow",
+      "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+      "Resource": "arn:aws:cloudfront::ACCOUNT_ID:distribution/YOUR_DISTRIBUTION_ID"
+    },
+    {
+      "Sid": "AllowStackDeployment",
       "Effect": "Allow",
       "Action": [
-        "cloudfront:CreateInvalidation"
+        "cloudformation:CreateChangeSet",
+        "cloudformation:DescribeChangeSet",
+        "cloudformation:ExecuteChangeSet",
+        "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackEvents",
+        "cloudformation:GetTemplate",
+        "cloudformation:ValidateTemplate"
       ],
-      "Resource": "arn:aws:cloudfront::ACCOUNT_ID:distribution/YOUR_DISTRIBUTION_ID"
+      "Resource": "arn:aws:cloudformation:*:ACCOUNT_ID:stack/sozorock-ai-lab/*"
+    },
+    {
+      "Sid": "AllowStackManagedResources",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:*",
+        "lambda:*",
+        "dynamodb:*",
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "logs:*",
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:GetRole",
+        "iam:PassRole",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:GetRolePolicy"
+      ],
+      "Resource": "*"
     }
   ]
 }
