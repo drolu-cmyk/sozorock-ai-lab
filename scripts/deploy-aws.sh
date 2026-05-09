@@ -14,6 +14,8 @@ INTERNAL_NOTIFICATION_EMAIL="${INTERNAL_NOTIFICATION_EMAIL:-contact@sozorockfoun
 FULL_APPLICATION_URL="${FULL_APPLICATION_URL:-}"
 ADMIN_API_SECRET="${ADMIN_API_SECRET:-}"
 ALLOWED_ORIGIN="${ALLOWED_ORIGIN:-https://ai-lab.sozorockfoundation.org}"
+APPLICATION_RATE_LIMIT="${APPLICATION_RATE_LIMIT:-5}"
+APPLICATION_BURST_LIMIT="${APPLICATION_BURST_LIMIT:-10}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -24,6 +26,10 @@ stack_exists() {
 
 stack_status() {
   aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].StackStatus" --output text 2>/dev/null || true
+}
+
+wait_for_rollback_complete() {
+  aws cloudformation wait stack-rollback-complete --region "$AWS_REGION" --stack-name "$STACK_NAME"
 }
 
 stack_parameter() {
@@ -58,16 +64,16 @@ recover_stack_if_needed() {
     UPDATE_ROLLBACK_FAILED)
       echo "Stack is in UPDATE_ROLLBACK_FAILED. Continuing rollback before deploy..."
       aws cloudformation continue-update-rollback --region "$AWS_REGION" --stack-name "$STACK_NAME"
-      aws cloudformation wait stack-update-rollback-complete --region "$AWS_REGION" --stack-name "$STACK_NAME"
+      wait_for_rollback_complete
       ;;
     UPDATE_ROLLBACK_IN_PROGRESS)
       echo "Stack rollback is already in progress. Waiting for rollback to complete..."
-      aws cloudformation wait stack-update-rollback-complete --region "$AWS_REGION" --stack-name "$STACK_NAME"
+      wait_for_rollback_complete
       ;;
     UPDATE_IN_PROGRESS|UPDATE_COMPLETE_CLEANUP_IN_PROGRESS|REVIEW_IN_PROGRESS|CREATE_IN_PROGRESS|DELETE_IN_PROGRESS|ROLLBACK_IN_PROGRESS)
       echo "Stack operation is already in progress. Waiting for it to settle..."
       aws cloudformation wait stack-update-complete --region "$AWS_REGION" --stack-name "$STACK_NAME" || true
-      aws cloudformation wait stack-update-rollback-complete --region "$AWS_REGION" --stack-name "$STACK_NAME" || true
+      wait_for_rollback_complete || true
       ;;
   esac
 
@@ -116,6 +122,7 @@ infer_missing_parameters() {
   echo "  Hosted zone: $([[ -n "$HOSTED_ZONE_ID" ]] && echo set || echo missing)"
   echo "  Full application URL: $([[ -n "$FULL_APPLICATION_URL" ]] && echo set || echo missing)"
   echo "  Admin API secret: $([[ -n "$ADMIN_API_SECRET" ]] && echo set || echo missing)"
+  echo "  API throttle: ${APPLICATION_RATE_LIMIT}/sec, burst ${APPLICATION_BURST_LIMIT}"
 }
 
 deploy_stack_if_safe() {
@@ -150,10 +157,25 @@ get_output() {
   aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='${key}'].OutputValue | [0]" --output text
 }
 
+apply_api_throttling() {
+  local endpoint api_id
+  endpoint="$(get_output ApplicationsApiEndpoint)"
+  api_id="$(echo "$endpoint" | sed -E 's#https://([^.]+)\..*#\1#')"
+  if [[ -n "$api_id" && "$api_id" != "None" ]]; then
+    aws apigatewayv2 update-stage \
+      --region "$AWS_REGION" \
+      --api-id "$api_id" \
+      --stage-name '$default' \
+      --default-route-settings "ThrottlingBurstLimit=${APPLICATION_BURST_LIMIT},ThrottlingRateLimit=${APPLICATION_RATE_LIMIT}" >/dev/null
+    echo "Applied API Gateway throttling to $api_id."
+  fi
+}
+
 bash scripts/build.sh
 recover_stack_if_needed
 infer_missing_parameters
 deploy_stack_if_safe
+apply_api_throttling
 
 DISTRIBUTION_ID="$(get_output DistributionId)"
 BUCKET_NAME="$(get_output BucketName)"
