@@ -11,6 +11,7 @@ SENDER_EMAIL="${SENDER_EMAIL:-contact@sozorockfoundation.org}"
 INTERNAL_NOTIFICATION_EMAIL="${INTERNAL_NOTIFICATION_EMAIL:-contact@sozorockfoundation.org}"
 FULL_APPLICATION_URL="${FULL_APPLICATION_URL:-}"
 ADMIN_API_SECRET="${ADMIN_API_SECRET:-}"
+ALLOWED_ORIGIN="${ALLOWED_ORIGIN:-https://ai-lab.sozorockfoundation.org}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -30,14 +31,16 @@ aws cloudformation deploy \
     SenderEmail="$SENDER_EMAIL" \
     InternalNotificationEmail="$INTERNAL_NOTIFICATION_EMAIL" \
     FullApplicationUrl="$FULL_APPLICATION_URL" \
-    AdminApiSecret="$ADMIN_API_SECRET"
+    AdminApiSecret="$ADMIN_API_SECRET" \
+    AllowedOrigin="$ALLOWED_ORIGIN"
 
 DISTRIBUTION_ID="$(aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)"
 BUCKET_NAME="$(aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)"
 DISTRIBUTION_DOMAIN="$(aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" --output text)"
 
 aws s3 sync dist/assets/ "s3://$BUCKET_NAME/assets/" --delete --cache-control "public,max-age=31536000,immutable"
-aws s3 sync dist/ "s3://$BUCKET_NAME/" --delete --exclude "assets/*" --cache-control "no-cache,no-store,must-revalidate"
+aws s3 sync dist/images/ "s3://$BUCKET_NAME/images/" --delete --cache-control "public,max-age=31536000,immutable"
+aws s3 sync dist/ "s3://$BUCKET_NAME/" --delete --exclude "assets/*" --exclude "images/*" --cache-control "no-cache,no-store,must-revalidate"
 
 INVALIDATION_ID="$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*" --query 'Invalidation.Id' --output text)"
 echo "CloudFront invalidation created: $INVALIDATION_ID"

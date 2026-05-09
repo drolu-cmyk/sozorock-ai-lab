@@ -16,8 +16,8 @@
     {
       "Sid": "AllowCloudFrontDeploy",
       "Effect": "Allow",
-      "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
-      "Resource": "arn:aws:cloudfront::ACCOUNT_ID:distribution/YOUR_DISTRIBUTION_ID"
+      "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:UpdateDistribution", "cloudfront:GetDistribution", "cloudfront:ListDistributions", "cloudfront:CreateResponseHeadersPolicy", "cloudfront:UpdateResponseHeadersPolicy", "cloudfront:GetResponseHeadersPolicy", "cloudfront:CreateFunction", "cloudfront:UpdateFunction", "cloudfront:DescribeFunction", "cloudfront:PublishFunction", "cloudfront:CreateOriginAccessControl", "cloudfront:UpdateOriginAccessControl", "cloudfront:GetOriginAccessControl"],
+      "Resource": "*"
     },
     {
       "Sid": "AllowStackDeployment",
@@ -49,7 +49,10 @@
         "iam:PassRole",
         "iam:PutRolePolicy",
         "iam:DeleteRolePolicy",
-        "iam:GetRolePolicy"
+        "iam:GetRolePolicy",
+        "route53:ChangeResourceRecordSets",
+        "route53:GetHostedZone",
+        "route53:ListHostedZones"
       ],
       "Resource": "*"
     }

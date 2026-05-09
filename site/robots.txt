@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.sozorockfoundation.org/ai-lab/sitemap.xml
+Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml
