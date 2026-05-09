@@ -146,12 +146,18 @@ Resources:
           const text = (value, max = 4000) => String(value || '').trim().slice(0, max);
           const validEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
           async function sendEmail(to, subject, body) {
-            if (!process.env.SENDER_EMAIL || !validEmail(to)) return;
-            await ses.send(new SendEmailCommand({
-              Source: process.env.SENDER_EMAIL,
-              Destination: { ToAddresses: [to] },
-              Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
-            }));
+            if (!process.env.SENDER_EMAIL || !validEmail(to)) return { ok: false, skipped: true };
+            try {
+              await ses.send(new SendEmailCommand({
+                Source: process.env.SENDER_EMAIL,
+                Destination: { ToAddresses: [to] },
+                Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
+              }));
+              return { ok: true };
+            } catch (error) {
+              console.error('SES_SEND_FAILED', { to, message: error.message });
+              return { ok: false, error: error.message };
+            }
           }
           async function handleStart(body) {
             if (text(body.website, 200)) return ok({ ok: true });
@@ -180,11 +186,12 @@ Resources:
                 ttl: { N: String(ttl) }
               }
             }));
-            await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. Selected applicants will receive the full application and next steps by email.\n\nThe SozoRock Foundation Inc.`);
+            const applicantEmail = await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. Selected applicants will receive the full application and next steps by email.\n\nThe SozoRock Foundation Inc.`);
+            let internalEmail = { ok: false, skipped: true };
             if (process.env.INTERNAL_EMAIL) {
-              await sendEmail(process.env.INTERNAL_EMAIL, `New AI Lab interest: ${firstName} ${lastName}`, `New SozoRock AI Lab interest submission\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nSubmission ID: ${id}\n\nWork to improve:\n${build}\n\nTo send the full application to a selected applicant, POST to /api/applications/selected with x-admin-secret and email, firstName, and optional applicationUrl.`);
+              internalEmail = await sendEmail(process.env.INTERNAL_EMAIL, `New AI Lab interest: ${firstName} ${lastName}`, `New SozoRock AI Lab interest submission\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nSubmission ID: ${id}\n\nWork to improve:\n${build}\n\nTo send the full application to a selected applicant, POST to /api/applications/selected with x-admin-secret and email, firstName, and optional applicationUrl.`);
             }
-            return ok({ ok: true, id });
+            return ok({ ok: true, id, email: { applicant: applicantEmail.ok === true, internal: internalEmail.ok === true } });
           }
           async function handleSelected(event, body) {
             const headerSecret = event.headers?.['x-admin-secret'] || event.headers?.['X-Admin-Secret'];
@@ -193,7 +200,8 @@ Resources:
             const firstName = text(body.firstName, 80) || 'there';
             const applicationUrl = text(body.applicationUrl, 2000) || text(process.env.FULL_APPLICATION_URL, 2000);
             if (!validEmail(email) || !applicationUrl) return ok({ error: 'Missing email or applicationUrl.' }, 400);
-            await sendEmail(email, 'Your SozoRock AI Lab full application', `Hi ${firstName},\n\nYou have been selected to complete the full SozoRock AI Lab application.\n\nFull application: ${applicationUrl}\n\nThe SozoRock Foundation Inc.`);
+            const delivery = await sendEmail(email, 'Your SozoRock AI Lab full application', `Hi ${firstName},\n\nYou have been selected to complete the full SozoRock AI Lab application.\n\nFull application: ${applicationUrl}\n\nThe SozoRock Foundation Inc.`);
+            if (!delivery.ok) return ok({ error: 'Email not sent.' }, 502);
             return ok({ ok: true });
           }
           exports.handler = async (event) => {
