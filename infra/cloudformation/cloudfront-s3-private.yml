@@ -34,6 +34,10 @@ Parameters:
     Default: ''
     NoEcho: true
     Description: Optional shared secret for POST /api/applications/selected.
+  AllowedOrigin:
+    Type: String
+    Default: https://ai-lab.sozorockfoundation.org
+    Description: Browser origin allowed to call the applications API.
 
 Conditions:
   HasDomain: !Not [!Equals [!Ref DomainName, '']]
@@ -70,6 +74,9 @@ Resources:
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
       SSESpecification:
         SSEEnabled: true
 
@@ -97,7 +104,6 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
-                  - dynamodb:UpdateItem
                 Resource: !GetAtt ApplicationsTable.Arn
               - Effect: Allow
                 Action:
@@ -120,6 +126,7 @@ Resources:
           INTERNAL_EMAIL: !Ref InternalNotificationEmail
           FULL_APPLICATION_URL: !Ref FullApplicationUrl
           ADMIN_API_SECRET: !Ref AdminApiSecret
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
       Code:
         ZipFile: |
           const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
@@ -127,33 +134,35 @@ Resources:
           const crypto = require('crypto');
           const ddb = new DynamoDBClient({});
           const ses = new SESClient({});
+          const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://ai-lab.sozorockfoundation.org';
           const headers = {
             'content-type': 'application/json',
-            'access-control-allow-origin': '*',
+            'access-control-allow-origin': allowedOrigin,
             'access-control-allow-methods': 'POST,OPTIONS',
-            'access-control-allow-headers': 'content-type,x-admin-secret'
+            'access-control-allow-headers': 'content-type,x-admin-secret',
+            'cache-control': 'no-store'
           };
           const ok = (body, statusCode = 200) => ({ statusCode, headers, body: JSON.stringify(body) });
-          const text = value => String(value || '').trim();
+          const text = (value, max = 4000) => String(value || '').trim().slice(0, max);
+          const validEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
           async function sendEmail(to, subject, body) {
-            if (!process.env.SENDER_EMAIL) return;
+            if (!process.env.SENDER_EMAIL || !validEmail(to)) return;
             await ses.send(new SendEmailCommand({
               Source: process.env.SENDER_EMAIL,
               Destination: { ToAddresses: [to] },
-              Message: {
-                Subject: { Data: subject },
-                Body: { Text: { Data: body } }
-              }
+              Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
             }));
           }
           async function handleStart(body) {
-            const firstName = text(body.firstName);
-            const lastName = text(body.lastName);
-            const email = text(body.email).toLowerCase();
-            const build = text(body.build);
-            if (!firstName || !lastName || !email || !build || body.consent !== true) return ok({ error: 'Missing required fields.' }, 400);
+            if (text(body.website, 200)) return ok({ ok: true });
+            const firstName = text(body.firstName, 80);
+            const lastName = text(body.lastName, 80);
+            const email = text(body.email, 254).toLowerCase();
+            const build = text(body.build, 2000);
+            if (!firstName || !lastName || !validEmail(email) || !build || body.consent !== true) return ok({ error: 'Missing required fields.' }, 400);
             const id = `ailab-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
             const submittedAt = new Date().toISOString();
+            const ttl = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 2;
             await ddb.send(new PutItemCommand({
               TableName: process.env.TABLE_NAME,
               Item: {
@@ -165,9 +174,10 @@ Resources:
                 email: { S: email },
                 build: { S: build },
                 consent: { BOOL: true },
-                source: { S: text(body.source) || 'sozorock-ai-lab-website' },
-                cohort: { S: text(body.cohort) || 'next' },
-                submittedAt: { S: submittedAt }
+                source: { S: text(body.source, 100) || 'sozorock-ai-lab-website' },
+                cohort: { S: text(body.cohort, 40) || 'next' },
+                submittedAt: { S: submittedAt },
+                ttl: { N: String(ttl) }
               }
             }));
             await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. Selected applicants will receive the full application and next steps by email.\n\nThe SozoRock Foundation Inc.`);
@@ -179,10 +189,10 @@ Resources:
           async function handleSelected(event, body) {
             const headerSecret = event.headers?.['x-admin-secret'] || event.headers?.['X-Admin-Secret'];
             if (!process.env.ADMIN_API_SECRET || headerSecret !== process.env.ADMIN_API_SECRET) return ok({ error: 'Unauthorized.' }, 401);
-            const email = text(body.email).toLowerCase();
-            const firstName = text(body.firstName) || 'there';
-            const applicationUrl = text(body.applicationUrl) || text(process.env.FULL_APPLICATION_URL);
-            if (!email || !applicationUrl) return ok({ error: 'Missing email or applicationUrl.' }, 400);
+            const email = text(body.email, 254).toLowerCase();
+            const firstName = text(body.firstName, 80) || 'there';
+            const applicationUrl = text(body.applicationUrl, 2000) || text(process.env.FULL_APPLICATION_URL, 2000);
+            if (!validEmail(email) || !applicationUrl) return ok({ error: 'Missing email or applicationUrl.' }, 400);
             await sendEmail(email, 'Your SozoRock AI Lab full application', `Hi ${firstName},\n\nYou have been selected to complete the full SozoRock AI Lab application.\n\nFull application: ${applicationUrl}\n\nThe SozoRock Foundation Inc.`);
             return ok({ ok: true });
           }
@@ -202,9 +212,10 @@ Resources:
       Name: !Sub '${AWS::StackName}-applications-api'
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowOrigins: ['*']
+        AllowOrigins: [!Ref AllowedOrigin]
         AllowMethods: [POST, OPTIONS]
-        AllowHeaders: ['content-type', 'x-admin-secret']
+        AllowHeaders: [content-type, x-admin-secret]
+        MaxAge: 300
 
   ApplicationsIntegration:
     Type: AWS::ApiGatewayV2::Integration
@@ -277,9 +288,13 @@ Resources:
       ResponseHeadersPolicyConfig:
         Name: !Sub '${AWS::StackName}-security-headers'
         SecurityHeadersConfig:
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.execute-api.*.amazonaws.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests"
+            Override: true
           StrictTransportSecurity:
             AccessControlMaxAgeSec: 63072000
             IncludeSubdomains: true
+            Preload: true
             Override: true
           ContentTypeOptions:
             Override: true
@@ -293,6 +308,14 @@ Resources:
             Protection: true
             ModeBlock: true
             Override: true
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+              Override: true
+            - Header: X-Permitted-Cross-Domain-Policies
+              Value: "none"
+              Override: true
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
