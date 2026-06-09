@@ -1,0 +1,45 @@
+name: Check AI Lab submissions
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Submission check mode"
+        required: true
+        default: "list"
+        type: choice
+        options:
+          - list
+          - smoke-test
+      show_full_submissions:
+        description: "Print unredacted applicant values"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      AI_LAB_DOMAIN: ${{ vars.AI_LAB_DOMAIN || 'ai-lab.sozorockfoundation.org' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check submissions
+        env:
+          MODE: ${{ inputs.mode }}
+          SHOW_FULL_SUBMISSIONS: ${{ inputs.show_full_submissions && '1' || '0' }}
+        run: bash scripts/check-submissions.sh --mode "$MODE"

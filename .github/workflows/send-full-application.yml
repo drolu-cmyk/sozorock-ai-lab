@@ -1,0 +1,43 @@
+name: Send AI Lab full application
+
+on:
+  workflow_dispatch:
+    inputs:
+      recipient_email:
+        description: "Selected applicant email"
+        required: true
+        type: string
+      first_name:
+        description: "Selected applicant first name"
+        required: true
+        type: string
+      application_url:
+        description: "Optional full application URL override"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    env:
+      AI_LAB_DOMAIN: ${{ vars.AI_LAB_DOMAIN || 'ai-lab.sozorockfoundation.org' }}
+      ADMIN_API_SECRET: ${{ secrets.ADMIN_API_SECRET }}
+      FULL_APPLICATION_URL: ${{ secrets.FULL_APPLICATION_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send full application link
+        env:
+          RECIPIENT_EMAIL: ${{ inputs.recipient_email }}
+          FIRST_NAME: ${{ inputs.first_name }}
+          APPLICATION_URL: ${{ inputs.application_url }}
+        run: |
+          if [[ -n "$APPLICATION_URL" ]]; then
+            bash scripts/send-selected-application.sh "$RECIPIENT_EMAIL" "$FIRST_NAME" "$APPLICATION_URL"
+          else
+            bash scripts/send-selected-application.sh "$RECIPIENT_EMAIL" "$FIRST_NAME"
+          fi
