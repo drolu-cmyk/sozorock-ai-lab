@@ -9,14 +9,13 @@ const failures = [];
 
 const requiredText = [
   'Practical AI participation',
-  'Build useful AI systems for real work.',
-  'Why the Lab exists',
-  'The Lab method',
+  'Build useful AI for real work.',
+  'No-cost participation',
+  'Learn by solving a real problem.',
+  'Start with the work, not the tool.',
   'Work from the Lab',
-  'Responsible implementation',
-  'Program information',
+  'Practical, focused, and no cost.',
   'Program leadership',
-  'Institutional partnerships',
   'Applications are reviewed on a rolling basis.'
 ];
 for (const text of requiredText) {
@@ -27,7 +26,8 @@ const forbiddenPatterns = [
   /Applications open for Cohort 02/i,
   /June 2026/i,
   /cohort-02/i,
-  /Ship real workflows/i
+  /Ship real workflows/i,
+  /Any cost, sponsorship, scholarship/i
 ];
 for (const pattern of forbiddenPatterns) {
   if (pattern.test(html)) failures.push(`Stale or prohibited copy found: ${pattern}`);
@@ -53,6 +53,7 @@ for (const name of requiredFormFields) {
 if (!html.includes('/api/applications/start')) failures.push('Application API endpoint is missing.');
 if (!html.includes('rolling-intake')) failures.push('Rolling intake identifier is missing.');
 if (!html.includes('application/ld+json')) failures.push('Structured data is missing.');
+if (!html.includes('"price":"0"')) failures.push('Structured data must state that participation is no cost.');
 if (!html.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
 
 if (failures.length) {
