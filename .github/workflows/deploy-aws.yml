@@ -1,7 +1,9 @@
-name: Deploy SozoRock AI Lab to AWS
+name: Validate and deploy SozoRock AI Lab to AWS
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -10,8 +12,29 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate content and build outputs
+        run: npm test
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
     env:
       STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -39,7 +62,14 @@ jobs:
 
       - name: Smoke test deployed site
         run: |
-          curl -fsSI "https://${DOMAIN_NAME}/" >/dev/null
-          curl -fsSI "https://${DOMAIN_NAME}/privacy" >/dev/null
-          curl -fsSI "https://${DOMAIN_NAME}/sitemap.xml" >/dev/null
-          curl -fsSI "https://${DOMAIN_NAME}/favicon.ico" >/dev/null
+          set -euo pipefail
+          base="https://${DOMAIN_NAME}"
+          curl -fsSI "${base}/" >/dev/null
+          curl -fsSI "${base}/privacy" >/dev/null
+          curl -fsSI "${base}/accessibility" >/dev/null
+          curl -fsSI "${base}/nondiscrimination" >/dev/null
+          curl -fsSI "${base}/terms" >/dev/null
+          curl -fsSI "${base}/sitemap.xml" >/dev/null
+          curl -fsSI "${base}/favicon.ico" >/dev/null
+          curl -fsS "${base}/" | grep -F "Build useful AI systems for real work." >/dev/null
+          curl -fsS "${base}/" | grep -F "Applications are reviewed on a rolling basis." >/dev/null

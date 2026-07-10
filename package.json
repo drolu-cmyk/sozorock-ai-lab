@@ -1,10 +1,12 @@
 {
   "name": "sozorock-ai-lab",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Static AWS-ready landing page for SozoRock AI Lab.",
+  "description": "AWS-ready website for SozoRock AI Lab practical AI participation and implementation.",
   "scripts": {
     "serve": "npx serve site -l 4173",
+    "test": "npm run test:content && npm run build",
+    "test:content": "node scripts/check-content.js",
     "build": "bash scripts/build.sh",
     "deploy:aws": "bash scripts/deploy-aws.sh"
   },
