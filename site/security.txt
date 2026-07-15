@@ -1,0 +1,5 @@
+Contact: mailto:contact@sozorockfoundation.org
+Expires: 2027-07-15T23:59:59Z
+Canonical: https://ai-lab.sozorockfoundation.org/.well-known/security.txt
+Policy: https://ai-lab.sozorockfoundation.org/security/
+Preferred-Languages: en

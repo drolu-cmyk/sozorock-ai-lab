@@ -1,0 +1,49 @@
+ticipant names, images, recordings, testimonials, screenshots, and project work.',
+  'lede': 'Participation does not automatically grant permission to use a person’s identity, image, voice, testimonial, or work for public promotion.',
+  'sections': [
+    ('Separate permission', '<p>Public use requires a separate, informed permission describing the material, purpose, channels, duration, editing, attribution, and whether the permission can be withdrawn.</p>'),
+    ('Choices', '<p>A participant may agree to some uses and decline others. Declining optional media or marketing permission will not by itself determine participation.</p>'),
+    ('Participant work', '<p>Before displaying project work, the Lab will confirm ownership, remove sensitive information, identify third-party material, and agree on attribution or anonymity.</p>'),
+    ('Withdrawal', '<p>A participant may ask the Lab to stop future use by emailing <a href="mailto:contact@sozorockfoundation.org?subject=Media%20Consent%20Request">contact@sozorockfoundation.org</a>. Material already printed, distributed, archived, or lawfully relied upon may not be fully retrievable.</p>'),
+    ('Minors', '<p>Use of a minor’s image, voice, or work requires a separate youth-safeguarding process and parent or guardian permission where required.</p>')
+  ]
+},
+'grievances': {
+  'title': 'Complaints and Grievances',
+  'description': 'How to report a concern, request review, receive acknowledgment, avoid retaliation, and seek escalation in SozoRock AI Lab.',
+  'lede': 'The Foundation welcomes good-faith concerns about access, conduct, discrimination, privacy, safety, program decisions, or policy compliance.',
+  'sections': [
+    ('What may be reported', '<p>Reports may concern harassment, discrimination, retaliation, accessibility, privacy, unsafe technology use, participant conduct, application or program process, conflicts of interest, misuse of funds, or another policy concern.</p>'),
+    ('How to report', '<p>Email <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Complaint%20or%20Grievance">contact@sozorockfoundation.org</a>. Include what happened, dates, people involved, records or witnesses, prior efforts to resolve the issue, the requested response, and any urgent safety concern.</p>'),
+    ('Anonymous reports', '<p>Anonymous reports may be considered where feasible, but limited information may restrict review or response. Do not use anonymity to make knowingly false statements.</p>'),
+    ('Review process', '<p>The Foundation will acknowledge the report, identify a reviewer without a known conflict, gather relevant information, protect confidentiality as reasonably possible, and communicate an outcome or next step where appropriate.</p>'),
+    ('Non-retaliation', '<p>Retaliation for a good-faith report, participation in a review, request for accommodation, or exercise of a legal right is prohibited.</p>'),
+    ('Escalation', '<p>A person may request leadership review if new information exists, a conflict affected the review, or the stated process was not followed. Emergency or criminal matters should be directed to the appropriate authority.</p>')
+  ]
+}
+}
+
+footer = '''<footer class="site-footer"><div class="footer-grid"><div class="footer-brand"><a class="logo" href="/"><img src="/assets/img/sozorock-ai-lab-logo.svg" alt="SozoRock AI Lab" width="420" height="96"></a><p>A free learning program of The SozoRock Foundation, Inc., a 501(c)(3) nonprofit organization.</p><p><a href="https://www.sozorockfoundation.org/">Visit the Foundation website</a></p></div><div class="footer-col"><h2>Learn</h2><nav><a href="/#learning">How the Lab works</a><a href="/#apply">Apply</a></nav></div><div class="footer-col"><h2>Legal</h2><nav><a href="/privacy/">Privacy Notice</a><a href="/terms/">Terms</a><a href="/cookies/">Cookies</a><a href="/acceptable-use/">Acceptable Use</a><a href="/responsible-ai/">Responsible AI</a></nav></div><div class="footer-col"><h2>Access</h2><nav><a href="/accessibility/">Accessibility</a><a href="/nondiscrimination/">Nondiscrimination</a><a href="/data-rights/">Data rights</a></nav></div><div class="footer-col"><h2>Report</h2><nav><a href="/security/">Security or AI incident</a><a href="/grievances/">Complaint or grievance</a><a href="/copyright/">Copyright</a><a href="/media-consent/">Media consent</a></nav></div></div><div class="footer-bottom"><p>© 2026 The SozoRock Foundation, Inc. All rights reserved.</p><p>SozoRock AI Lab is independent and is not affiliated with, sponsored by, or endorsed by OpenAI. The Lab may use third-party tools, including OpenAI products and Codex, where appropriate.</p></div></footer>'''
+
+def make_page(slug, data):
+    canonical = f'{base}/{slug}/'
+    sections_html = []
+    toc = []
+    for i, (heading, body) in enumerate(data['sections'], start=1):
+        sid = f'section-{i}'
+        toc.append(f'<a href="#{sid}">{html.escape(heading)}</a>')
+        sections_html.append(f'<section class="legal-section" id="{sid}"><h2>{html.escape(heading)}</h2>{body}</section>')
+    schema = {
+        '@context':'https://schema.org', '@type':'WebPage', 'name':data['title'], 'url':canonical,
+        'description':data['description'], 'isPartOf':{'@type':'WebSite','name':'SozoRock AI Lab','url':base},
+        'publisher':{'@type':'NGO','name':'The SozoRock Foundation, Inc.','url':'https://www.sozorockfoundation.org/'},
+        'dateModified':'2026-07-15', 'inLanguage':'en-US'
+    }
+    document = f'''<!doctype html>
+<html lang="en-US"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(data['title'])} | SozoRock AI Lab</title>
+<meta name="description" content="{html.escape(data['description'])}">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<link rel="canonical" href="{canonical}"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="stylesheet" href="/assets/css/styles.css">
+<meta property="og:type" content="article"><meta property="og:site_name" content="SozoRock AI Lab"><meta property="og:title" content="{html.escape(data['title'])} | SozoRock AI Lab"><meta property="og:description" content="{html.escape(data['description'])}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{base}/assets

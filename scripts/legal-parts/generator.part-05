@@ -1,0 +1,12 @@
+/img/social-preview.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@srockfoundation"><meta name="twitter:title" content="{html.escape(data['title'])} | SozoRock AI Lab"><meta name="twitter:description" content="{html.escape(data['description'])}"><meta name="twitter:image" content="{base}/assets/img/social-preview.png">
+<script type="application/ld+json">{json.dumps(schema, separators=(',',':'))}</script>
+</head><body class="legal-page"><a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header"><div class="header-inner"><a class="logo" href="/"><img src="/assets/img/sozorock-ai-lab-logo.svg" alt="SozoRock AI Lab" width="420" height="96"></a><nav class="legal-nav" aria-label="Legal navigation"><a href="/">AI Lab</a><a href="https://www.sozorockfoundation.org/">Foundation</a><a href="mailto:contact@sozorockfoundation.org">Contact</a></nav></div></header>
+<main class="legal-shell" id="main"><p class="legal-eyebrow">Last updated: {updated}</p><h1>{html.escape(data['title'])}</h1><p class="legal-lede">{data['lede']}</p><nav class="legal-toc" aria-label="Page contents">{''.join(toc)}</nav>{''.join(sections_html)}<p class="legal-note">This public policy is operational guidance, not legal advice. The Foundation may revise it after legal, security, accessibility, or program review.</p></main>{footer}</body></html>'''
+    out = root / slug / 'index.html'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(document, encoding='utf-8')
+
+for slug, data in pages.items():
+    make_page(slug, data)

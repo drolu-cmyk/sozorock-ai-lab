@@ -1,0 +1,120 @@
+            return sent ? response({ ok: true }, 200, requestId) : response({ error: 'Email not sent.' }, 502, requestId);
+          }
+          exports.handler = async (event) => {
+            const requestId = event.requestContext?.requestId || crypto.randomUUID();
+            const method = event.requestContext?.http?.method || '';
+            if (method === 'OPTIONS') return response({ ok: true }, 204, requestId);
+            if (method !== 'POST') return response({ error: 'Method not allowed.' }, 405, requestId);
+            if (!String(header(event, 'content-type')).toLowerCase().startsWith('application/json')) return response({ error: 'Content type must be application/json.' }, 415, requestId);
+            if ((event.body || '').length > 32768) return response({ error: 'Request too large.' }, 413, requestId);
+            let body;
+            try { body = event.body ? JSON.parse(event.body) : {}; } catch { return response({ error: 'Invalid JSON.' }, 400, requestId); }
+            const path = event.rawPath || event.requestContext?.http?.path || '';
+            try {
+              if (path.endsWith('/api/applications/start')) return await handleStart(event, body, requestId);
+              if (path.endsWith('/api/applications/selected')) return await handleSelected(event, body, requestId);
+              return response({ error: 'Not found.' }, 404, requestId);
+            } catch (error) {
+              console.error('APPLICATION_API_ERROR', { requestId, code: error?.name || 'UnknownError' });
+              return response({ error: 'Unable to process request.' }, 500, requestId);
+            }
+          };
+
+  ApplicationsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-applications'
+      RetentionInDays: 30
+
+  ApplicationsHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-applications-api'
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: [!Ref AllowedOrigin]
+        AllowMethods: [POST, OPTIONS]
+        AllowHeaders: [content-type]
+        MaxAge: 300
+
+  ApplicationsApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/apigateway/${AWS::StackName}-applications'
+      RetentionInDays: 30
+
+  ApplicationsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApplicationsFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  ApplicationStartRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      RouteKey: 'POST /api/applications/start'
+      Target: !Sub 'integrations/${ApplicationsIntegration}'
+
+  ApplicationSelectedRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      RouteKey: 'POST /api/applications/selected'
+      Target: !Sub 'integrations/${ApplicationsIntegration}'
+      AuthorizationType: AWS_IAM
+
+  ApplicationsStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ApplicationsHttpApi
+      StageName: '$default'
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingRateLimit: !Ref ApplicationRateLimit
+        ThrottlingBurstLimit: !Ref ApplicationBurstLimit
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApplicationsApiLogGroup.Arn
+        Format: '{"requestId":"$context.requestId","routeKey":"$context.routeKey","status":"$context.status","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}'
+
+  ApplicationsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApplicationsFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApplicationsHttpApi}/*/*/api/applications/*'
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-oac'
+        Description: OAC for SozoRock AI Lab private site bucket
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  UrlRewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub '${AWS::StackName}-url-rewrite'
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Rewrite extensionless static routes to index.html.
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.indexOf('/api/') === 0 || uri.indexOf('/.well-known/') === 0) return request;
+          if (uri.endsWith('/')) request.uri = uri + 'index.html';
+          else if (uri.indexOf('.') === -1) request.uri = uri + '/index.html';
+          return request;
+        }

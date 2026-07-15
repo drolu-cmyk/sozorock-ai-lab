@@ -1,0 +1,47 @@
+solely on AI for decisions with legal or similarly significant effects. Use qualified human review, documented criteria, appeal or correction pathways, and applicable legal safeguards.</p>'),
+    ('Document the workflow', '<p>Record the goal, context, data source, instructions, model or tool where relevant, review points, tests, known limits, and final human decision.</p>'),
+    ('Third-party tools', '<p>The Lab may use OpenAI products and Codex. SozoRock AI Lab is not affiliated with, sponsored by, or endorsed by OpenAI. Participants must follow the provider’s current terms, privacy settings, and organizational rules.</p>'),
+    ('Report problems', '<p>Report harmful, discriminatory, unsafe, confidential, deceptive, or security-related output through the <a href="/security/">Security and AI Incident</a> page. Preserve relevant evidence without sharing additional sensitive information.</p>')
+  ]
+},
+'data-rights': {
+  'title': 'Data Rights Request',
+  'description': 'How to request access, correction, deletion, export, restriction, consent withdrawal, or marketing opt-out from SozoRock AI Lab.',
+  'lede': 'You may ask about information connected with an AI Lab application, communication, or participation record.',
+  'sections': [
+    ('Available requests', '<ul><li>Access or a copy of information.</li><li>Correction of inaccurate information.</li><li>Deletion, subject to lawful retention.</li><li>Restriction or objection to certain processing.</li><li>Withdrawal of consent for future processing.</li><li>Export or portability where applicable.</li><li>Opt-out from nonessential email.</li></ul>'),
+    ('How to submit', '<p>Email <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Data%20Rights%20Request">contact@sozorockfoundation.org</a> with the subject “AI Lab Data Rights Request.” State the request, the email used with the Lab, and enough information to locate the record. Do not send identity documents unless requested through a secure method.</p>'),
+    ('Verification', '<p>We may verify identity, authority, and jurisdiction before responding. An authorized agent may be required to provide proof of authority.</p>'),
+    ('Timing and limits', '<p>We aim to acknowledge requests within five business days and respond within the period required by applicable law. Some information may be retained for security, fraud prevention, legal, audit, dispute, or nonprofit recordkeeping obligations.</p>'),
+    ('Appeal or complaint', '<p>If a request is denied, the response will explain the reason where permitted and identify any available appeal or regulator complaint pathway.</p>')
+  ]
+},
+'security': {
+  'title': 'Security and AI Incident Reporting',
+  'description': 'How to report a suspected vulnerability, data exposure, account compromise, unsafe AI output, or unauthorized disclosure involving SozoRock AI Lab.',
+  'lede': 'Report suspected security, privacy, or AI safety problems promptly. Do not include unnecessary sensitive information in the first message.',
+  'sections': [
+    ('What to report', '<ul><li>Suspected data exposure or unauthorized disclosure.</li><li>Account compromise, phishing, or credential theft.</li><li>A security vulnerability affecting the website or API.</li><li>Unsafe, discriminatory, deceptive, or harmful AI output connected with a Lab activity.</li><li>Unauthorized publication of participant work or media.</li><li>Loss of a device or file containing Lab information.</li></ul>'),
+    ('How to report', '<p>Email <a href="mailto:contact@sozorockfoundation.org?subject=Urgent%20AI%20Lab%20Security%20or%20AI%20Incident">contact@sozorockfoundation.org</a> with the subject “Urgent AI Lab Security or AI Incident.” Include the affected page or system, date and time, what you observed, steps to reproduce if safe, and a contact method.</p>'),
+    ('Safe reporting', '<p>Do not access information beyond what is necessary to confirm a problem. Do not modify, delete, download, publicly disclose, or retain other people’s information. Stop testing if it may disrupt service or affect users.</p>'),
+    ('Response', '<p>We aim to acknowledge credible reports within three business days, preserve evidence, contain risk, assess legal obligations, notify affected parties where required, remediate the issue, and document lessons and controls.</p>'),
+    ('Emergency', '<p>This channel is not an emergency service. Contact emergency services or the appropriate authority if there is an immediate threat to life or safety.</p>')
+  ]
+},
+'copyright': {
+  'title': 'Copyright and Intellectual Property',
+  'description': 'Ownership, permitted use, participant work, trademarks, open-source software, third-party material, and copyright complaint information.',
+  'lede': 'Different materials on the site may have different owners and licenses. Check the notice that accompanies the material before reuse.',
+  'sections': [
+    ('Foundation materials', '<p>Unless stated otherwise, the SozoRock name, logos, curriculum, written content, photographs, videos, templates, and program materials are owned by or licensed to The SozoRock Foundation, Inc. and may not be reused commercially or represented as another organization’s work without permission.</p>'),
+    ('Open-source software', '<p>Repository source code identified by the MIT License may be used under that license. The MIT License does not grant trademark rights or rights to personal information, participant work, photographs, curriculum, or third-party assets.</p>'),
+    ('Participant work', '<p>Participants retain rights in original work they create. Submission for review grants only the limited rights needed to deliver the program. Public display requires separate permission or a clear public-submission agreement.</p>'),
+    ('Third-party material', '<p>Third-party names, trademarks, software, models, screenshots, articles, and other materials remain subject to their owners’ terms and licenses.</p>'),
+    ('Copyright concerns', '<p>Send a detailed notice to <a href="mailto:contact@sozorockfoundation.org?subject=Copyright%20Concern">contact@sozorockfoundation.org</a>. Include identification of the work, the material at issue, the URL, your contact information, a good-faith statement, and evidence of authority. We may remove or restrict material while reviewing the request.</p>')
+  ]
+},
+'media-consent': {
+  'title': 'Participant Work and Media Consent',
+  'description': 'How SozoRock AI Lab requests permission to use participant names, images, recordings, testimonials, screenshots, and project work.',
+  'lede': 'Participation and public storytelling are separate choices. Joining the Lab does not automatically grant permission for marketing use.',
+  'sections': [

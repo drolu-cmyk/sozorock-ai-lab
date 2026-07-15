@@ -1,0 +1,36 @@
+submitted and must not use the service on behalf of another person without authority.</p>'),
+    ('Educational purpose', '<p>The Lab provides educational and program-related information. It does not provide legal, medical, financial, tax, employment, procurement, cybersecurity, or other professional advice.</p>'),
+    ('Accuracy and accounts', '<p>Information submitted must be accurate and lawful. If accounts are later introduced, users will be responsible for credentials, activity, and prompt notice of suspected compromise.</p>'),
+    ('AI outputs', '<p>AI-generated or AI-assisted material may be incomplete, incorrect, biased, outdated, or unsuitable. Users must review sources, facts, rights, confidentiality, and consequences before relying on, publishing, deploying, or automating an output. High-impact decisions must not be delegated solely to AI.</p>'),
+    ('No guaranteed admission or outcome', '<p>An application does not guarantee admission, selection, funding, employment, certification, accreditation, partnership, tool access, or any personal or business result. Program dates, format, content, eligibility, tools, facilitators, and capacity may change.</p>'),
+    ('Acceptable use', '<p>You must follow the <a href="/acceptable-use/">Acceptable Use Policy</a> and <a href="/responsible-ai/">Responsible AI Use Policy</a>. We may restrict or end access for conduct that threatens people, systems, program integrity, or legal compliance.</p>'),
+    ('Participant content', '<p>You retain ownership of original work you submit, subject to rights you already granted to others. You grant the Foundation a limited license to store, process, review, and return the work for program delivery. Public display, marketing, or publication requires separate permission unless the material was clearly submitted for public release.</p>'),
+    ('Foundation materials and trademarks', '<p>Unless stated otherwise, the website, curriculum, templates, design, and program materials are owned by or licensed to The SozoRock Foundation, Inc. The MIT License may apply to identified software source files, but it does not grant rights to SozoRock names, logos, trademarks, personal data, photographs, curriculum, or third-party materials.</p>'),
+    ('Third-party services', '<p>Third-party websites, cloud services, AI tools, software, or resources are governed by their own terms, privacy practices, availability, and fees. Reference to a service does not imply sponsorship or endorsement.</p>'),
+    ('Availability and changes', '<p>We may change, suspend, or discontinue features or content. We do not promise uninterrupted or error-free operation.</p>'),
+    ('Disclaimers', '<p>To the extent permitted by law, the website and public materials are provided “as is” and “as available,” without warranties of accuracy, fitness, non-infringement, availability, or a particular result.</p>'),
+    ('Limitation of liability', '<p>To the extent permitted by law, the Foundation and its directors, officers, employees, volunteers, facilitators, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, or lost-profit damages arising from use of the public website or third-party tools. Applicable law may not allow all limitations.</p>'),
+    ('Governing law and disputes', '<p>These terms are governed by the laws of the State of New York, without regard to conflict-of-law rules. Before filing a claim, contact the Foundation and allow a reasonable opportunity to address the concern. Courts with jurisdiction in New York will have venue unless applicable law requires otherwise.</p>'),
+    ('General terms', '<p>If a provision is unenforceable, the remaining provisions continue. Failure to enforce a provision is not a waiver. These terms and incorporated policies are the complete public website agreement unless another written agreement applies.</p>'),
+    ('Contact and changes', '<p>Questions may be sent to <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Terms">contact@sozorockfoundation.org</a>. Updated terms apply prospectively from the date posted.</p>')
+  ]
+},
+'accessibility': {
+  'title': 'Accessibility Statement',
+  'description': 'The accessibility commitment, current target, testing approach, accommodation pathway, and feedback process for SozoRock AI Lab.',
+  'lede': 'The SozoRock Foundation, Inc. works to make SozoRock AI Lab information and services usable by people with disabilities.',
+  'sections': [
+    ('Target standard', '<p>We target the Web Content Accessibility Guidelines (WCAG) 2.2 Level AA for the public website and participant-facing digital materials where reasonably achievable.</p>'),
+    ('Current measures', '<ul><li>Semantic headings and landmarks.</li><li>Keyboard-accessible navigation and forms.</li><li>Visible focus indicators.</li><li>Text alternatives for meaningful images.</li><li>Readable contrast, responsive text, and large touch targets.</li><li>Form labels, instructions, error messaging, and status announcements.</li><li>Reduced-motion support.</li></ul>'),
+    ('Testing', '<p>The site is reviewed using automated checks, keyboard testing, responsive browser testing, and manual inspection. Automated tools cannot prove full conformance, so user feedback remains important.</p>'),
+    ('Known limitations', '<p>Some linked third-party services, generated files, legacy documents, or embedded content may not meet the same standard. We work to provide an accessible alternative when notified.</p>'),
+    ('Alternative formats and accommodation', '<p>To request another format, help with an application, captioning, interpretation, or another reasonable accommodation, email <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Accessibility%20Request">contact@sozorockfoundation.org</a>. Include the page or material, the barrier, the requested format, and a way to respond.</p>'),
+    ('Response and escalation', '<p>We aim to acknowledge accessibility requests within five business days. Complex remediation may take longer. If a concern is not resolved, reply to the same message and request escalation to Foundation leadership.</p>'),
+    ('Last review', '<p>This statement was reviewed on July 15, 2026. Accessibility is an ongoing responsibility and the statement will be updated as the service changes.</p>')
+  ]
+},
+'nondiscrimination': {
+  'title': 'Nondiscrimination and Accommodation',
+  'description': 'Nondiscrimination, reasonable accommodation, complaint, confidentiality, non-retaliation, and review commitments for SozoRock AI Lab.',
+  'lede': 'The Foundation seeks fair access to program information, application review, participation, employment, procurement, partnerships, and services.',
+  'sections': [

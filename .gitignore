@@ -1,6 +1,10 @@
 node_modules/
 dist/
 dist-ai-lab-prefix/
-.env
+*.log
 .DS_Store
-.aws-sam/
+homepage-desktop.png
+homepage-mobile.png
+form-success.png
+privacy-desktop.png
+browser-qa.json

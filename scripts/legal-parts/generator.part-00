@@ -1,0 +1,35 @@
+from pathlib import Path
+import html, json
+
+root = Path(__file__).resolve().parents[1] / 'site'
+base = 'https://ai-lab.sozorockfoundation.org'
+updated = 'July 15, 2026'
+
+pages = {
+'privacy': {
+  'title': 'Privacy Notice',
+  'description': 'How SozoRock AI Lab collects, uses, shares, protects, retains, and responds to requests about personal information.',
+  'lede': 'This notice explains how The SozoRock Foundation, Inc. handles information connected with the SozoRock AI Lab website, applications, cohorts, communications, support, and related operations.',
+  'sections': [
+    ('Scope and controller', '<p>The SozoRock Foundation, Inc. is responsible for the personal information described in this notice. Questions may be sent to <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Privacy%20Request">contact@sozorockfoundation.org</a>.</p>'),
+    ('Information we collect', '<ul><li>Contact information, such as name, email address, location, role, and organization.</li><li>Application information, including the work you want to improve, experience, format preferences, and accommodation requests.</li><li>Program records, including enrollment, attendance, submissions, feedback, support requests, consent records, and completion records.</li><li>Technical information needed to operate and secure the service, such as timestamps, request metadata, logs, device and browser information, and security events.</li><li>Information you choose to provide in messages, forms, files, surveys, or incident reports.</li></ul>'),
+    ('Do not submit sensitive information', '<p>Do not submit passwords, authentication codes, medical records, financial account details, government identifiers, confidential employer information, or information you are not authorized to share. If a learning activity requires sensitive information, use a de-identified or fictional example unless written instructions state otherwise.</p>'),
+    ('How we use information', '<ul><li>Review applications and manage cohorts.</li><li>Communicate schedules, decisions, support, and program updates.</li><li>Provide learning activities, feedback, accommodations, and participant services.</li><li>Protect the website, prevent abuse, investigate incidents, and maintain records.</li><li>Improve program content and prepare aggregated or de-identified reports.</li><li>Meet legal, audit, tax-exempt, contractual, and operational obligations.</li></ul>'),
+    ('Legal bases', '<p>Where applicable, processing may rely on consent, steps taken at your request, performance of a program relationship, legitimate interests in operating and protecting the Lab, compliance with legal obligations, and protection of vital or public interests. You may withdraw consent for future processing where consent is the applicable basis.</p>'),
+    ('AI and third-party tools', '<p>The Lab may use third-party hosting, email, analytics, security, learning, cloud, and AI services. These providers process information under their own terms and privacy practices. The Lab may use OpenAI products and Codex for learning or development activities. Do not place confidential information into a third-party AI service unless you are authorized and the activity expressly permits it.</p>'),
+    ('Sharing', '<p>We do not sell or rent personal information. Information may be shared with service providers, authorized facilitators, professional advisers, funders or partners receiving aggregated reports, government authorities where legally required, or another organization involved in a merger, transfer, or reorganization. Public use of a participant name, image, testimonial, or work requires separate permission.</p>'),
+    ('Cookies and analytics', '<p>The website uses technologies necessary to deliver, secure, and measure the service. The current public site does not use advertising cookies. See the <a href="/cookies/">Cookie Notice</a> for the current categories and controls.</p>'),
+    ('Retention', '<p>Application and program records are retained only as long as reasonably needed for review, delivery, reporting, security, legal, audit, and nonprofit recordkeeping. The application database is configured to expire records after approximately two years unless a shorter or longer period is required. Security, consent, transaction, and legal records may be retained longer where necessary.</p>'),
+    ('Security', '<p>We use administrative, technical, and organizational safeguards, including restricted access, encryption in transit and at rest, logging, backups, retention controls, service-provider review, and incident response. No system can be guaranteed completely secure.</p>'),
+    ('International transfers', '<p>Some service providers may process information in the United States or other countries. Where applicable, we use contractual, technical, or organizational measures intended to protect transferred information.</p>'),
+    ('Your choices and rights', '<p>Depending on where you live, you may request access, correction, deletion, restriction, portability, withdrawal of consent, or objection to certain processing. You may also opt out of nonessential email. Submit a request through the <a href="/data-rights/">Data Rights Request</a> page. We may verify identity and may retain information where required for security, legal, audit, or recordkeeping purposes.</p>'),
+    ('Children', '<p>The public application is not directed to children under 13. We do not knowingly collect personal information from children under 13 through the public form. A future youth program would use a separate notice, eligibility rules, and parental or guardian consent where required.</p>'),
+    ('Changes and complaints', '<p>We may update this notice as services or laws change. The date at the top identifies the latest revision. Privacy concerns may be sent to the contact above. You may also have the right to complain to a regulator with jurisdiction over your information.</p>')
+  ]
+},
+'terms': {
+  'title': 'Terms of Use',
+  'description': 'Terms governing the SozoRock AI Lab website, applications, learning materials, participant work, and program communications.',
+  'lede': 'These terms govern use of the SozoRock AI Lab website and related public services. Program-specific participation terms may also apply after selection.',
+  'sections': [
+    ('Acceptance and eligibility', '<p>By using the website or submitting a form, you agree to these terms. You must be legally able to provide the information 

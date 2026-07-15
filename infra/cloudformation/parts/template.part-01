@@ -1,0 +1,120 @@
+  ApplicationsFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: ApplicationsFunctionLogGroup
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-applications'
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Role: !GetAtt ApplicationsFunctionRole.Arn
+      Timeout: 10
+      MemorySize: 256
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ApplicationsTable
+          SENDER_EMAIL: !Ref SenderEmail
+          INTERNAL_EMAIL: !Ref InternalNotificationEmail
+          FULL_APPLICATION_URL: !Ref FullApplicationUrl
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Code:
+        ZipFile: |
+          const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+          const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
+          const crypto = require('crypto');
+          const ddb = new DynamoDBClient({});
+          const ses = new SESClient({});
+          const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://ai-lab.sozorockfoundation.org';
+          const baseHeaders = {
+            'content-type': 'application/json; charset=utf-8',
+            'access-control-allow-origin': allowedOrigin,
+            'access-control-allow-methods': 'POST,OPTIONS',
+            'access-control-allow-headers': 'content-type',
+            'cache-control': 'no-store, max-age=0',
+            'pragma': 'no-cache',
+            'vary': 'Origin',
+            'x-content-type-options': 'nosniff'
+          };
+          const response = (body, statusCode = 200, requestId = '') => ({
+            statusCode,
+            headers: { ...baseHeaders, ...(requestId ? { 'x-request-id': requestId } : {}) },
+            body: JSON.stringify(body)
+          });
+          const text = (value, max = 4000) => String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max);
+          const validEmail = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+          const header = (event, name) => event.headers?.[name] || event.headers?.[name.toLowerCase()] || event.headers?.[name.toUpperCase()] || '';
+          const optionalString = (item, key, value, max) => {
+            const cleaned = text(value, max);
+            if (cleaned) item[key] = { S: cleaned };
+          };
+          async function sendEmail(to, subject, body) {
+            if (!process.env.SENDER_EMAIL || !validEmail(to)) return false;
+            try {
+              await ses.send(new SendEmailCommand({
+                Source: process.env.SENDER_EMAIL,
+                Destination: { ToAddresses: [to] },
+                Message: {
+                  Subject: { Data: text(subject, 180), Charset: 'UTF-8' },
+                  Body: { Text: { Data: text(body, 12000), Charset: 'UTF-8' } }
+                }
+              }));
+              return true;
+            } catch (error) {
+              console.error('SES_SEND_FAILED', { code: error?.name || 'UnknownError' });
+              return false;
+            }
+          }
+          async function handleStart(event, body, requestId) {
+            const origin = header(event, 'origin');
+            if (origin !== allowedOrigin) return response({ error: 'Origin not allowed.' }, 403, requestId);
+            if (text(body.website, 200)) return response({ ok: true }, 202, requestId);
+            const started = Date.parse(text(body.formStartedAt, 80));
+            if (!Number.isFinite(started)) return response({ error: 'Invalid form session.' }, 400, requestId);
+            const elapsed = Date.now() - started;
+            if (elapsed < 1800) return response({ ok: true }, 202, requestId);
+            if (elapsed > 24 * 60 * 60 * 1000) return response({ error: 'Form session expired.' }, 400, requestId);
+            const firstName = text(body.firstName, 80);
+            const lastName = text(body.lastName, 80);
+            const email = text(body.email, 254).toLowerCase();
+            const build = text(body.build, 2000);
+            if (!firstName || !lastName || !validEmail(email) || build.length < 20 || body.consent !== true) {
+              return response({ error: 'Missing or invalid required fields.' }, 400, requestId);
+            }
+            const id = `ailab-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`;
+            const submittedAt = new Date().toISOString();
+            const ttl = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 2;
+            const item = {
+              id: { S: id },
+              type: { S: 'interest_start' },
+              status: { S: 'submitted' },
+              firstName: { S: firstName },
+              lastName: { S: lastName },
+              email: { S: email },
+              build: { S: build },
+              consent: { BOOL: true },
+              source: { S: 'sozorock-ai-lab-website' },
+              cohort: { S: 'rolling-intake' },
+              submittedAt: { S: submittedAt },
+              ttl: { N: String(ttl) }
+            };
+            optionalString(item, 'region', body.region, 120);
+            optionalString(item, 'roleOrOrganization', body.roleOrOrganization, 160);
+            optionalString(item, 'preferredFormat', body.preferredFormat, 60);
+            optionalString(item, 'technicalExperience', body.technicalExperience, 100);
+            optionalString(item, 'sensitiveData', body.sensitiveData, 40);
+            optionalString(item, 'accessNeeds', body.accessNeeds, 1000);
+            await ddb.send(new PutItemCommand({ TableName: process.env.TABLE_NAME, Item: item, ConditionExpression: 'attribute_not_exists(id)' }));
+            const applicantSent = await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. If there is a suitable cohort, we will send the schedule and next steps by email.\n\nDo not send confidential information by reply.\n\nThe SozoRock Foundation, Inc.`);
+            let internalSent = false;
+            if (validEmail(process.env.INTERNAL_EMAIL || '')) {
+              internalSent = await sendEmail(process.env.INTERNAL_EMAIL, 'New SozoRock AI Lab interest submission', `Submission ID: ${id}\nName: ${firstName} ${lastName}\nEmail: ${email}\nRegion: ${text(body.region, 120)}\nRole or organization: ${text(body.roleOrOrganization, 160)}\nSensitive data indicated: ${text(body.sensitiveData, 40)}\n\nWork to improve:\n${build}`);
+            }
+            return response({ ok: true, id, email: { applicant: applicantSent, internal: internalSent } }, 201, requestId);
+          }
+          async function handleSelected(event, body, requestId) {
+            const email = text(body.email, 254).toLowerCase();
+            const firstName = text(body.firstName, 80) || 'there';
+            const applicationUrl = text(body.applicationUrl, 2000) || text(process.env.FULL_APPLICATION_URL, 2000);
+            let parsed;
+            try { parsed = new URL(applicationUrl); } catch { return response({ error: 'Invalid application URL.' }, 400, requestId); }
+            if (!validEmail(email) || parsed.protocol !== 'https:') return response({ error: 'Invalid request.' }, 400, requestId);
+            const sent = await sendEmail(email, 'Your SozoRock AI Lab application', `Hi ${firstName},\n\nYou have been invited to complete the SozoRock AI Lab application.\n\nApplication: ${parsed.toString()}\n\nThe SozoRock Foundation, Inc.`);

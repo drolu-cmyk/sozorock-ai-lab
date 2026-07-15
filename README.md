@@ -1,95 +1,107 @@
 # SozoRock AI Lab
 
-A static, AWS-ready landing page for **SozoRock AI Lab**, a program of the SozoRock Foundation focused on helping communities, small businesses, public-sector partners, and local institutions learn, build, deploy, and govern AI safely.
+Production source for **SozoRock AI Lab**, a free applied-AI learning program of **The SozoRock Foundation, Inc.**
 
-**Recommended canonical URL:** `https://www.sozorockfoundation.org/ai-lab/`  
-**Recommended standalone AWS launch URL:** `https://ai-lab.sozorockfoundation.org/`
+- Production: <https://ai-lab.sozorockfoundation.org/>
+- Foundation: <https://www.sozorockfoundation.org/>
+- Runtime: AWS S3, CloudFront, Route 53, ACM, API Gateway, Lambda, DynamoDB, SES, and CloudWatch
+- Software license: [MIT](LICENSE)
 
-The site keeps the high-end, art-directed, light-mode design direction from the original concept while shifting the copywriting into a nonprofit/civic AI capacity-building frame.
+> The MIT License covers software source. It does not grant rights to SozoRock names, logos, trademarks, participant data, photographs, curriculum, or third-party materials. See [NOTICE.md](NOTICE.md).
 
-## What is included
+## Product direction
 
-```txt
-site/                         Static website source
-site/index.html               Main SozoRock AI Lab page
-site/assets/css/styles.css    Visual system, layout, responsive styling
-site/assets/js/main.js        Navigation, reveal animation, active section state
-design/reference-images/      8 separate horizontal SVG section references
-design/reference-collages/    Generated visual reference collages from the concept pass
-docs/aws-hosting.md           AWS/CloudFront hosting guide
-docs/design-system.md         Design and copy system notes
-infra/cloudformation/         S3 + CloudFront infrastructure template
-infra/iam/                    GitHub Actions deploy policy example
-.github/workflows/            AWS deployment workflow
-scripts/build.sh              Builds root and /ai-lab prefixed static outputs
-scripts/deploy-aws.sh         CloudFormation + S3 sync + CloudFront invalidation
+The site leads with one plain promise: **Use AI for work you already do.** It is editorial and visual rather than a numbered SaaS landing page. It excludes card grids, fake dashboards, invented metrics, unsupported testimonials, fake affiliations, and generic transformation claims.
+
+## Structure
+
+```text
+site/                         Public website and generated legal pages
+site/assets/                  Shared CSS, JavaScript, identity, and visual assets
+site/.well-known/security.txt Vulnerability reporting contact
+infra/cloudformation/parts/   Auditable CloudFormation source parts
+scripts/legal-parts/          Auditable legal-page generator source parts
+scripts/render-legal.sh       Builds public policy pages
+scripts/render-cloudformation.sh Builds the deployment template
+scripts/check-*.js            Content, SEO, accessibility, and security gates
+.github/workflows/            Validation, CodeQL, and AWS deployment
 ```
 
-## Local preview
+## Local development
 
-No build framework is required. This is a static site.
+Requirements: Node.js 20+, npm, Bash, and Python 3.
 
 ```bash
-cd sozorock-ai-lab
+npm ci
 npm run serve
+npm test
 ```
 
-Then open `http://localhost:4173`.
+`npm test` regenerates policy pages and the CloudFormation template, checks approved copy and prohibited claims, validates internal links, SEO metadata, JSON-LD, sitemap, robots, accessibility conventions, strict-CSP compatibility, backend controls, and then builds `dist/`.
 
-## Build
+## AWS architecture
 
-```bash
-npm run build
+```text
+Browser -> CloudFront -> private S3
+                    -> API Gateway -> Lambda -> DynamoDB + SES
 ```
 
-This creates:
+Controls include private S3 with Origin Access Control, encryption, versioning, DynamoDB point-in-time recovery and TTL, least-privilege Lambda permissions, same-origin application submission, JSON and size validation, honeypot and completion-time checks, API throttling, reserved concurrency, retained logs, AWS-IAM protection for the administrative route, TLS 1.2+, HSTS, strict CSP without `unsafe-inline`, clickjacking protection, restrictive referrer and permissions policies, and no-store API responses.
 
-- `dist/` for standalone hosting at `ai-lab.sozorockfoundation.org`
-- `dist-ai-lab-prefix/ai-lab/` for path hosting at `www.sozorockfoundation.org/ai-lab/`
+## Application endpoints
 
-## AWS recommendation
+- `POST /api/applications/start` — public interest form, restricted to the production origin.
+- `POST /api/applications/selected` — administrative invitation endpoint protected by AWS IAM and intended for SigV4-signed calls, not browsers.
 
-Use **S3 + CloudFront + Origin Access Control**.
+Application records expire after approximately two years unless lawful operational needs require a different period. The public form warns users not to submit confidential or regulated information.
 
-For fastest clean launch, deploy to:
+## Deployment
 
-```txt
-ai-lab.sozorockfoundation.org
-```
+Pushes to `main` run validation, deploy the CloudFormation stack through GitHub OIDC, synchronize the site to S3, invalidate CloudFront, wait for invalidation, and run live route, metadata, and security-header smoke tests.
 
-For the nonprofit parent-domain path:
+Required secrets:
 
-```txt
-www.sozorockfoundation.org/ai-lab/
-```
-
-that path must be handled by the existing `www.sozorockfoundation.org` hosting layer. If the main site is already behind CloudFront, add a behavior for `/ai-lab/*` that points to this AI Lab S3 origin. If the main site is hosted elsewhere, either deploy as a subdomain first or update the main site host to proxy the `/ai-lab/` path.
-
-See [`docs/aws-hosting.md`](docs/aws-hosting.md).
-
-## Deploy with GitHub Actions
-
-1. Create the AWS stack using `scripts/deploy-aws.sh` or the CloudFormation template.
-2. Create a GitHub OIDC IAM role for this repo.
-3. Add these repository variables/secrets:
-
-```txt
+```text
 AWS_ROLE_TO_ASSUME
-AWS_REGION
 AWS_S3_BUCKET
-AWS_CLOUDFRONT_DISTRIBUTION_ID
+AWS_ACM_CERTIFICATE_ARN
+AWS_ROUTE53_HOSTED_ZONE_ID
+FULL_APPLICATION_URL
 ```
 
-Then pushes to `main` deploy the static site.
+Recommended variables:
 
-## Brand architecture
+```text
+STACK_NAME=sozorock-ai-lab
+AWS_REGION=us-east-1
+AI_LAB_DOMAIN=ai-lab.sozorockfoundation.org
+ALLOWED_ORIGIN=https://ai-lab.sozorockfoundation.org
+SENDER_EMAIL=contact@sozorockfoundation.org
+INTERNAL_NOTIFICATION_EMAIL=contact@sozorockfoundation.org
+APPLICATION_RATE_LIMIT=5
+APPLICATION_BURST_LIMIT=10
+```
 
-SozoRock Foundation remains the parent brand. The site references the related SozoRock program family:
+## Search and sharing
 
-- SozoRock Health
-- SozoRock Meridian
-- SozoRock AI Lab
+Every indexable page has a unique title and description, canonical URL, Open Graph metadata, X Card metadata, one `h1`, valid JSON-LD, and crawlable internal links. The homepage publishes NGO, WebSite, WebPage, and EducationalOccupationalProgram schema. The site includes `robots.txt`, a canonical XML sitemap, manifest, favicon, social image, and custom 404 page.
 
-## License
+Technical SEO cannot guarantee rankings. After deployment, verify the domain in Google Search Console, submit `https://ai-lab.sozorockfoundation.org/sitemap.xml`, inspect the canonical homepage, monitor coverage and enhancements, and request recrawling after material changes.
 
-All visual direction, copy, and content in this repository are provided for SozoRock Foundation use. See [`LICENSE`](LICENSE).
+## Accessibility
+
+The public target is WCAG 2.2 Level AA. Release review covers semantic structure, keyboard access, visible focus, image alternatives, labelled forms, live status messages, responsive layouts, reduced motion, zoom, and touch-target size. Automated checks support but do not prove conformance.
+
+## Legal operation
+
+The site publishes privacy, terms, cookies, acceptable-use, responsible-AI, accessibility, nondiscrimination, data-rights, security, copyright, media-consent, and grievance pages. These pages must remain consistent with deployed behavior. Counsel should review them before payments, minors, formal credentials, research, participant accounts, or materially different data processing are introduced.
+
+## Brand and OpenAI
+
+The parent identity is **SozoRock** and **AI Lab** is the program descriptor. Do not substitute another SozoRock program name. SozoRock AI Lab is independent and is not sponsored by or affiliated with OpenAI. The Lab may use third-party tools, including OpenAI products and Codex, where appropriate.
+
+## Security and license
+
+Report vulnerabilities through [SECURITY.md](SECURITY.md), `/security/`, or `/.well-known/security.txt`.
+
+Software is available under the [MIT License](LICENSE). Separate restrictions for identity, content, participant information, and third-party materials are in [NOTICE.md](NOTICE.md).
