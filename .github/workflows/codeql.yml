@@ -7,8 +7,6 @@ on:
   schedule:
     - cron: '17 8 * * 1'
 permissions:
-  security-events: write
-  packages: read
   actions: read
   contents: read
 jobs:
@@ -20,3 +18,14 @@ jobs:
         with:
           languages: javascript-typescript
       - uses: github/codeql-action/analyze@v3
+        with:
+          upload: never
+          output: codeql-results
+          upload-database: false
+      - name: Preserve CodeQL SARIF
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: codeql-results
+          if-no-files-found: error
+          retention-days: 30
