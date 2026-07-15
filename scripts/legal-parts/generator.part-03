@@ -42,6 +42,4 @@ solely on AI for decisions with legal or similarly significant effects. Use qual
 },
 'media-consent': {
   'title': 'Participant Work and Media Consent',
-  'description': 'How SozoRock AI Lab requests permission to use participant names, images, recordings, testimonials, screenshots, and project work.',
-  'lede': 'Participation and public storytelling are separate choices. Joining the Lab does not automatically grant permission for marketing use.',
-  'sections': [
+  'description': 'How SozoRock AI Lab requests permission to use par
