@@ -70,5 +70,7 @@ jobs:
           curl -fsSI "${base}/terms" >/dev/null
           curl -fsSI "${base}/sitemap.xml" >/dev/null
           curl -fsSI "${base}/favicon.ico" >/dev/null
-          curl -fsS "${base}/" | grep -F "Build useful AI systems for real work." >/dev/null
+          curl -fsS "${base}/" | grep -F "Use AI to do real work." >/dev/null
+          curl -fsS "${base}/" | grep -F "Learn one skill. Build one workflow. Show what changed." >/dev/null
           curl -fsS "${base}/" | grep -F "Applications are reviewed on a rolling basis." >/dev/null
+          curl -fsS "${base}/" | grep -F "Report an AI or security incident" >/dev/null
