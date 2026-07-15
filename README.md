@@ -104,4 +104,6 @@ The parent identity is **SozoRock** and **AI Lab** is the program descriptor. Do
 
 Report vulnerabilities through [SECURITY.md](SECURITY.md), `/security/`, or `/.well-known/security.txt`.
 
+CodeQL runs on pull requests, pushes to `main`, and a weekly schedule. The workflow retains SARIF output as a 30-day artifact when repository code-scanning upload is unavailable.
+
 Software is available under the [MIT License](LICENSE). Separate restrictions for identity, content, participant information, and third-party materials are in [NOTICE.md](NOTICE.md).
