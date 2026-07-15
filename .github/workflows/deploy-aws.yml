@@ -19,7 +19,20 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm test
+      - name: Generate policy pages
+        run: npm run generate:legal
+      - name: Render CloudFormation
+        run: npm run generate:cloudformation
+      - name: Content and link checks
+        run: npm run test:content
+      - name: SEO and schema checks
+        run: npm run test:seo
+      - name: Accessibility checks
+        run: npm run test:accessibility
+      - name: Security checks
+        run: npm run test:security
+      - name: Production build
+        run: npm run build
   deploy:
     if: github.event_name != 'pull_request'
     needs: validate
