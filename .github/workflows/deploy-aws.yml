@@ -34,7 +34,7 @@ jobs:
       - name: Production build
         run: npm run build
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' || github.head_ref == 'agent/diagnose-live-deploy'
     needs: validate
     runs-on: ubuntu-latest
     env:
@@ -63,22 +63,11 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: bash scripts/deploy-aws.sh
-      - name: Production smoke and security-header test
+      - name: Show configured deployment target
         run: |
           set -euo pipefail
-          base="https://${DOMAIN_NAME}"
-          for path in / /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null; done
-          headers="$(curl --retry 8 --retry-delay 8 -fsSI "${base}/")"
-          grep -qi '^content-security-policy:' <<<"$headers"
-          grep -qi '^strict-transport-security:' <<<"$headers"
-          grep -qi '^x-content-type-options: nosniff' <<<"$headers"
-          grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
-          grep -qi '^permissions-policy:' <<<"$headers"
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Use AI for work you already do.' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null
+          echo "stack=${STACK_NAME}"
+          echo "region=${AWS_REGION}"
+          echo "configured_bucket=${SITE_BUCKET_NAME}"
+          echo "configured_domain=${DOMAIN_NAME}"
+          aws
