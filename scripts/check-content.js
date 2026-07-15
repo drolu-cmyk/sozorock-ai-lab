@@ -1,73 +1,79 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-
 const root = path.resolve(__dirname, '..');
-const htmlPath = path.join(root, 'site', 'index.html');
-const html = fs.readFileSync(htmlPath, 'utf8');
+const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+const exists = p => fs.existsSync(path.join(root, p));
 const failures = [];
+const html = read('site/index.html');
+const js = read('site/assets/js/main.js');
 
-const requiredText = [
-  'Practical AI participation',
-  'Use AI to do real work.',
-  'Learn one skill. Build one workflow. Show what changed.',
-  'No-cost participation',
-  'Learn by solving a real problem.',
-  'Start where the work is.',
-  'Learn. Build. Save the evidence.',
-  'We count demonstrated use, not just attendance.',
-  'Fund a cohort. Host a Lab. Provide technology.',
+const requiredCopy = [
+  'Use AI for work you already do.',
+  'Bring one task. Build a better way to do it.',
+  'Stop starting over.',
+  'Learn through the work.',
+  'AI helps. People decide.',
+  'Bring the Lab to your organization.',
+  'Visit the Foundation website',
   'Applications are reviewed on a rolling basis.'
 ];
-for (const text of requiredText) {
-  if (!html.includes(text)) failures.push(`Missing required content: ${text}`);
-}
+for (const text of requiredCopy) if (!html.includes(text)) failures.push(`Homepage missing approved copy: ${text}`);
 
-const forbiddenPatterns = [
-  /Applications open for Cohort 02/i,
-  /June 2026/i,
-  /cohort-02/i,
-  /Ship real workflows/i,
-  /Any cost, sponsorship, scholarship/i,
-  /operational leverage/i,
-  /AI-powered future/i
+const forbidden = [
+  /class="(?:steps|step|card|cards|metric|metrics|dashboard)\b/i,
+  /Microsoft|Google\.org|OpenAI Academy|AWS for nonprofits|NCR Foundation/i,
+  /guaranteed (?:outcome|funding|placement)|certified|accredited/i,
+  /unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge/i,
+  /SozoRock Health|SozoRock Consulting|SozoRock Technology/i,
+  /Day\s+\d+\s+of\s+\d+/i,
+  /\b\d{2,}\+\s+(?:learners|workflows|hours)/i
 ];
-for (const pattern of forbiddenPatterns) {
-  if (pattern.test(html)) failures.push(`Stale or prohibited copy found: ${pattern}`);
+for (const pattern of forbidden) if (pattern.test(html)) failures.push(`Homepage contains prohibited or unsupported content: ${pattern}`);
+
+const legalPages = ['privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
+for (const slug of legalPages) {
+  const file = `site/${slug}/index.html`;
+  if (!exists(file)) failures.push(`Missing legal page: ${file}`);
+  else if (read(file).length < 2500) failures.push(`Legal page is unexpectedly thin: ${file}`);
 }
 
-const requiredFiles = [
-  'site/privacy/index.html',
-  'site/accessibility/index.html',
-  'site/nondiscrimination/index.html',
-  'site/terms/index.html',
-  'site/sitemap.xml',
-  'site/favicon.ico'
+const assets = [
+  'site/assets/css/styles.css','site/assets/js/main.js','site/assets/img/sozorock-ai-lab-logo.svg',
+  'site/assets/img/hero-participant.svg','site/assets/img/work-before.svg','site/assets/img/work-after.svg','site/favicon.svg',
+  'site/favicon.svg','site/apple-touch-icon.png','site/site.webmanifest','site/404.html'
 ];
-for (const relative of requiredFiles) {
-  if (!fs.existsSync(path.join(root, relative))) failures.push(`Missing required file: ${relative}`);
-}
+for (const asset of assets) if (!exists(asset)) failures.push(`Missing required asset: ${asset}`);
 
-const requiredFormFields = ['firstName','lastName','email','region','roleOrOrganization','preferredFormat','technicalExperience','build','sensitiveData','accessNeeds','consent'];
-for (const name of requiredFormFields) {
-  if (!html.includes(`name="${name}"`)) failures.push(`Missing form field: ${name}`);
-}
-
-const requiredTrustLinks = ['/privacy','/accessibility','/nondiscrimination','/terms'];
-for (const href of requiredTrustLinks) {
-  if (!html.includes(`href="${href}"`)) failures.push(`Missing trust link: ${href}`);
-}
-
-if (!html.includes('/api/applications/start')) failures.push('Application API endpoint is missing.');
-if (!html.includes('rolling-intake')) failures.push('Rolling intake identifier is missing.');
-if (!html.includes('application/ld+json')) failures.push('Structured data is missing.');
-if (!html.includes('"price":"0"')) failures.push('Structured data must state that participation is no cost.');
+const formFields = ['firstName','lastName','email','region','roleOrOrganization','preferredFormat','technicalExperience','build','sensitiveData','accessNeeds','consent'];
+for (const field of formFields) if (!html.includes(`name="${field}"`)) failures.push(`Missing application field: ${field}`);
+if (!js.includes("fetch('/api/applications/start'")) failures.push('Application endpoint is missing from main.js.');
+if (!js.includes('formStartedAt')) failures.push('Form timing signal is missing.');
 if (!html.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
-if (!html.includes('Report an AI or security incident')) failures.push('AI and security incident reporting link is missing.');
-if (!html.includes('not affiliated with, endorsed by, or sponsored by OpenAI')) failures.push('Third-party independence disclaimer is missing.');
+if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
+if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
+
+const htmlFiles = [];
+(function walk(dir) {
+  for (const entry of fs.readdirSync(dir, {withFileTypes:true})) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else if (entry.name.endsWith('.html')) htmlFiles.push(full);
+  }
+})(path.join(root, 'site'));
+for (const file of htmlFiles) {
+  const source = fs.readFileSync(file, 'utf8');
+  const page = path.relative(path.join(root, 'site'), file);
+  const hrefs = [...source.matchAll(/href="(\/[^"?#]*)(?:[?#][^"]*)?"/g)].map(m => m[1]);
+  for (const href of new Set(hrefs)) {
+    if (href === '/' || href.startsWith('/api/')) continue;
+    const rel = href.endsWith('/') ? `${href.slice(1)}index.html` : href.slice(1);
+    if (!exists(`site/${rel}`)) failures.push(`${page}: broken internal link target ${href}`);
+  }
+}
 
 if (failures.length) {
-  console.error('Content checks failed:\n- ' + failures.join('\n- '));
+  console.error(`Content checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Content checks passed (${requiredText.length} required statements, ${requiredFiles.length} required files, ${requiredFormFields.length} form fields).`);
+console.log(`Content checks passed: homepage, ${legalPages.length} policy pages, form, assets, and internal links.`);

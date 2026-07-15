@@ -1,39 +1,43 @@
 name: Validate and deploy SozoRock AI Lab to AWS
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   id-token: write
   contents: read
-
+concurrency:
+  group: sozorock-ai-lab-production
+  cancel-in-progress: false
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
-
-      - name: Validate content and build outputs
-        run: npm test
-
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20, cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate policy pages
+        run: npm run generate:legal
+      - name: Render CloudFormation
+        run: npm run generate:cloudformation
+      - name: Content and link checks
+        run: npm run test:content
+      - name: SEO and schema checks
+        run: npm run test:seo
+      - name: Accessibility checks
+        run: npm run test:accessibility
+      - name: Security checks
+        run: npm run test:security
+      - name: Production build
+        run: npm run build
   deploy:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
+    environment: production
     env:
       STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -44,33 +48,33 @@ jobs:
       SENDER_EMAIL: ${{ vars.SENDER_EMAIL || 'contact@sozorockfoundation.org' }}
       INTERNAL_NOTIFICATION_EMAIL: ${{ vars.INTERNAL_NOTIFICATION_EMAIL || 'contact@sozorockfoundation.org' }}
       FULL_APPLICATION_URL: ${{ secrets.FULL_APPLICATION_URL }}
-      ADMIN_API_SECRET: ${{ secrets.ADMIN_API_SECRET }}
       ALLOWED_ORIGIN: ${{ vars.ALLOWED_ORIGIN || 'https://ai-lab.sozorockfoundation.org' }}
+      APPLICATION_RATE_LIMIT: ${{ vars.APPLICATION_RATE_LIMIT || '5' }}
+      APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20, cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Build, update infrastructure, deploy site, and invalidate CloudFront
-        run: bash scripts/deploy-aws.sh
-
-      - name: Smoke test deployed site
+      - run: bash scripts/deploy-aws.sh
+      - name: Production smoke and security-header test
         run: |
           set -euo pipefail
           base="https://${DOMAIN_NAME}"
-          curl -fsSI "${base}/" >/dev/null
-          curl -fsSI "${base}/privacy" >/dev/null
-          curl -fsSI "${base}/accessibility" >/dev/null
-          curl -fsSI "${base}/nondiscrimination" >/dev/null
-          curl -fsSI "${base}/terms" >/dev/null
-          curl -fsSI "${base}/sitemap.xml" >/dev/null
-          curl -fsSI "${base}/favicon.ico" >/dev/null
-          curl -fsS "${base}/" | grep -F "Use AI to do real work." >/dev/null
-          curl -fsS "${base}/" | grep -F "Learn one skill. Build one workflow. Show what changed." >/dev/null
-          curl -fsS "${base}/" | grep -F "Applications are reviewed on a rolling basis." >/dev/null
-          curl -fsS "${base}/" | grep -F "Report an AI or security incident" >/dev/null
+          for path in / /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico; do curl --retry 5 --retry-delay 5 -fsSI "${base}${path}" >/dev/null; done
+          headers="$(curl --retry 5 --retry-delay 5 -fsSI "${base}/")"
+          grep -qi '^content-security-policy:' <<<"$headers"
+          grep -qi '^strict-transport-security:' <<<"$headers"
+          grep -qi '^x-content-type-options: nosniff' <<<"$headers"
+          grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
+          grep -qi '^permissions-policy:' <<<"$headers"
+          curl -fsS "${base}/" | grep -F 'Use AI for work you already do.' >/dev/null
+          curl -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
+          curl -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
+          curl -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
+          curl -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
+          curl -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null

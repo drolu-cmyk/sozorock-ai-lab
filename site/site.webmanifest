@@ -1,14 +1,1 @@
-{
-  "name": "SozoRock AI Lab",
-  "short_name": "AI Lab",
-  "description": "Build useful AI. Ship real workflows.",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#071F3C",
-  "theme_color": "#071F3C",
-  "icons": [
-    { "src": "/assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+{"id":"/","name":"SozoRock AI Lab","short_name":"AI Lab","description":"Free applied AI learning from The SozoRock Foundation.","start_url":"/","display":"standalone","background_color":"#fffdf8","theme_color":"#173f3c","icons":[{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}]}

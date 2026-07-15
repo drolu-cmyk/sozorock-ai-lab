@@ -1,0 +1,45 @@
+modation, grievance, confidentiality, non-retaliation, and escalation information for SozoRock AI Lab.',
+  'lede': 'The SozoRock Foundation, Inc. is committed to fair access and respectful participation in its programs, operations, employment, procurement, and partnerships.',
+  'sections': [
+    ('Policy', '<p>Discrimination, harassment, exclusion, or retaliation is prohibited where applicable law and Foundation policy apply.</p>'),
+    ('Protected categories', '<p>This includes race, color, religion, creed, national origin, ancestry, sex, pregnancy, sexual orientation, gender identity or expression, age, disability, genetic information, marital or familial status, military or veteran status, citizenship or immigration status where protected, and any other category protected by law.</p>'),
+    ('Program decisions', '<p>Program decisions may consider mission fit, capacity, readiness, conduct, attendance, project scope, safety, and lawful eligibility. They must not be based on a protected category.</p>'),
+    ('Reasonable accommodation', '<p>Applicants and participants may request a reasonable accommodation by emailing <a href="mailto:contact@sozorockfoundation.org?subject=AI%20Lab%20Accommodation%20Request">contact@sozorockfoundation.org</a>. The Foundation may ask for information needed to understand the request but will limit access to those who need it.</p>'),
+    ('Report a concern', '<p>Concerns may be submitted through the <a href="/grievances/">Complaint and Grievance</a> page. Include what happened, when, who was involved, witnesses or records, the requested response, and whether immediate safety support is needed.</p>'),
+    ('Confidentiality and non-retaliation', '<p>Information will be shared only as reasonably needed to review and respond. Absolute confidentiality cannot be promised. Retaliation for a good-faith report, participation in a review, or accommodation request is prohibited.</p>'),
+    ('Review and appeal', '<p>The Foundation will acknowledge reports, conduct a proportionate review, communicate an outcome where appropriate, and identify corrective steps. A person may request review by Foundation leadership if they believe relevant information was missed or the process was not followed.</p>')
+  ]
+},
+'cookies': {
+  'title': 'Cookie Notice',
+  'description': 'Information about cookies, local storage, analytics, and privacy choices on the SozoRock AI Lab website.',
+  'lede': 'This notice describes the browser technologies currently used by the public SozoRock AI Lab website.',
+  'sections': [
+    ('Current use', '<p>The public website is designed to operate without advertising cookies. It may use strictly necessary browser storage, security controls, or delivery-network technologies required to serve pages, submit forms, prevent abuse, and maintain accessibility.</p>'),
+    ('Analytics', '<p>Privacy-preserving analytics may be introduced to understand page use, errors, and performance. Before nonessential analytics are enabled, this notice and any required consent controls will be updated.</p>'),
+    ('Third-party links', '<p>Links to other websites may set their own cookies or collect information. Their practices are governed by their own notices.</p>'),
+    ('Browser controls', '<p>You can remove or block cookies through browser settings. Blocking necessary storage may affect form submission, security, or other features.</p>'),
+    ('Changes', '<p>The technology actually deployed must match this notice. Material changes will be posted here with an updated date.</p>')
+  ]
+},
+'acceptable-use': {
+  'title': 'Acceptable Use Policy',
+  'description': 'Rules for lawful, safe, respectful, and responsible use of SozoRock AI Lab systems, content, and third-party tools.',
+  'lede': 'Use of Lab systems and learning activities must protect people, information, organizations, and program integrity.',
+  'sections': [
+    ('Use lawfully and with authority', '<p>Do not use the Lab to violate law, contract, policy, intellectual-property rights, privacy, confidentiality, or another person’s rights.</p>'),
+    ('Prohibited conduct', '<ul><li>Harassment, discrimination, threats, exploitation, or deception.</li><li>Fraud, impersonation, phishing, spam, or misleading content.</li><li>Malware, unauthorized access, credential theft, surveillance, or attempts to bypass safeguards.</li><li>Uploading confidential, regulated, or personal information without authority.</li><li>Generating or distributing unlawful, infringing, abusive, or dangerous content.</li><li>Using AI to make high-impact decisions about employment, housing, credit, health, education, public benefits, justice, or essential services without lawful authority, appropriate safeguards, and meaningful human review.</li><li>Academic or professional dishonesty.</li><li>Testing systems or people without permission.</li></ul>'),
+    ('Security testing', '<p>Do not scan, probe, exploit, or test SozoRock systems without written authorization. Good-faith vulnerability reports should follow the <a href="/security/">Security and AI Incident</a> process.</p>'),
+    ('Enforcement', '<p>We may remove content, limit access, preserve records, contact an organization, or refer conduct to authorities where appropriate. Responses will consider severity, intent, history, harm, and legal obligations.</p>')
+  ]
+},
+'responsible-ai': {
+  'title': 'Responsible AI Use Policy',
+  'description': 'Human review, privacy, source checking, bias, documentation, high-impact decisions, and incident reporting requirements for SozoRock AI Lab.',
+  'lede': 'AI can assist work. It does not replace responsibility for facts, rights, judgment, or consequences.',
+  'sections': [
+    ('Human responsibility', '<p>A person remains responsible for the purpose, inputs, review, decision, communication, publication, and deployment of AI-assisted work.</p>'),
+    ('Check the work', '<p>Verify facts, sources, calculations, citations, dates, names, rights, and assumptions. Treat confident language as unverified until checked.</p>'),
+    ('Protect information', '<p>Do not enter confidential, personal, regulated, proprietary, or security-sensitive information into an AI service without authorization and an approved use.</p>'),
+    ('Bias and unequal effects', '<p>Consider who may be excluded, misclassified, stereotyped, disadvantaged, or exposed. Test with relevant examples and involve affected people where appropriate.</p>'),
+    ('High-impact decisions', '<p>Do not rely 
