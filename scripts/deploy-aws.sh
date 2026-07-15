@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 export AWS_PAGER=""
+
 STACK_NAME="${STACK_NAME:-sozorock-ai-lab}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 SITE_BUCKET_NAME="${SITE_BUCKET_NAME:?Set SITE_BUCKET_NAME}"
@@ -16,16 +17,99 @@ APPLICATION_BURST_LIMIT="${APPLICATION_BURST_LIMIT:-10}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$(mktemp)"
 trap 'rm -f "$TEMPLATE"' EXIT
+
 cd "$ROOT_DIR"
+
+stack_exists=false
+if aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" >/dev/null 2>&1; then
+  stack_exists=true
+fi
+
+get_parameter() {
+  aws cloudformation describe-stacks \
+    --region "$AWS_REGION" \
+    --stack-name "$STACK_NAME" \
+    --query "Stacks[0].Parameters[?ParameterKey=='$1'].ParameterValue | [0]" \
+    --output text
+}
+
+if [[ "$stack_exists" == true ]]; then
+  [[ -n "$CERTIFICATE_ARN" ]] || CERTIFICATE_ARN="$(get_parameter CertificateArn)"
+  [[ -n "$HOSTED_ZONE_ID" ]] || HOSTED_ZONE_ID="$(get_parameter HostedZoneId)"
+  [[ -n "$FULL_APPLICATION_URL" ]] || FULL_APPLICATION_URL="$(get_parameter FullApplicationUrl)"
+fi
+
+if [[ -n "$DOMAIN_NAME" && -z "$CERTIFICATE_ARN" ]]; then
+  echo "A certificate ARN is required for the custom domain." >&2
+  exit 1
+fi
+
 bash scripts/render-cloudformation.sh "$TEMPLATE" >/dev/null
 npm test
 aws cloudformation validate-template --region "$AWS_REGION" --template-body "file://$TEMPLATE" >/dev/null
-aws cloudformation deploy --region "$AWS_REGION" --stack-name "$STACK_NAME" --template-file "$TEMPLATE" --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --parameter-overrides SiteBucketName="$SITE_BUCKET_NAME" DomainName="$DOMAIN_NAME" CertificateArn="$CERTIFICATE_ARN" HostedZoneId="$HOSTED_ZONE_ID" SenderEmail="$SENDER_EMAIL" InternalNotificationEmail="$INTERNAL_NOTIFICATION_EMAIL" FullApplicationUrl="$FULL_APPLICATION_URL" AllowedOrigin="$ALLOWED_ORIGIN" ApplicationRateLimit="$APPLICATION_RATE_LIMIT" ApplicationBurstLimit="$APPLICATION_BURST_LIMIT"
-get_output(){ aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue | [0]" --output text; }
+
+aws cloudformation deploy \
+  --region "$AWS_REGION" \
+  --stack-name "$STACK_NAME" \
+  --template-file "$TEMPLATE" \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
+  --parameter-overrides \
+    SiteBucketName="$SITE_BUCKET_NAME" \
+    DomainName="$DOMAIN_NAME" \
+    CertificateArn="$CERTIFICATE_ARN" \
+    HostedZoneId="$HOSTED_ZONE_ID" \
+    SenderEmail="$SENDER_EMAIL" \
+    InternalNotificationEmail="$INTERNAL_NOTIFICATION_EMAIL" \
+    FullApplicationUrl="$FULL_APPLICATION_URL" \
+    AllowedOrigin="$ALLOWED_ORIGIN" \
+    ApplicationRateLimit="$APPLICATION_RATE_LIMIT" \
+    ApplicationBurstLimit="$APPLICATION_BURST_LIMIT"
+
+get_output() {
+  aws cloudformation describe-stacks \
+    --region "$AWS_REGION" \
+    --stack-name "$STACK_NAME" \
+    --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue | [0]" \
+    --output text
+}
+
 DISTRIBUTION_ID="$(get_output DistributionId)"
+DISTRIBUTION_DOMAIN="$(get_output DistributionDomainName)"
 BUCKET_NAME="$(get_output BucketName)"
-aws s3 sync dist/assets/ "s3://$BUCKET_NAME/assets/" --delete --cache-control "public,max-age=31536000,immutable"
-aws s3 sync dist/ "s3://$BUCKET_NAME/" --delete --exclude "assets/*" --cache-control "no-cache,no-store,must-revalidate"
-INVALIDATION_ID="$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query 'Invalidation.Id' --output text)"
-aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$INVALIDATION_ID"
-echo "Deployment complete: https://$DOMAIN_NAME"
+
+if [[ -z "$DISTRIBUTION_ID" || "$DISTRIBUTION_ID" == "None" ]]; then
+  echo "CloudFormation did not return a CloudFront distribution ID." >&2
+  exit 1
+fi
+
+if [[ -z "$BUCKET_NAME" || "$BUCKET_NAME" == "None" ]]; then
+  echo "CloudFormation did not return an S3 bucket name." >&2
+  exit 1
+fi
+
+aws s3 sync dist/assets/ "s3://$BUCKET_NAME/assets/" \
+  --delete \
+  --cache-control "public,max-age=31536000,immutable"
+
+aws s3 sync dist/ "s3://$BUCKET_NAME/" \
+  --delete \
+  --exclude "assets/*" \
+  --cache-control "no-cache,no-store,must-revalidate"
+
+INVALIDATION_ID="$(aws cloudfront create-invalidation \
+  --distribution-id "$DISTRIBUTION_ID" \
+  --paths '/*' \
+  --query 'Invalidation.Id' \
+  --output text)"
+
+aws cloudfront wait invalidation-completed \
+  --distribution-id "$DISTRIBUTION_ID" \
+  --id "$INVALIDATION_ID"
+
+printf 'Deployment complete\n'
+printf '  stack: %s\n' "$STACK_NAME"
+printf '  bucket: %s\n' "$BUCKET_NAME"
+printf '  distribution: %s\n' "$DISTRIBUTION_ID"
+printf '  distribution domain: %s\n' "$DISTRIBUTION_DOMAIN"
+printf '  public URL: https://%s\n' "$DOMAIN_NAME"
