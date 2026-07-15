@@ -1,0 +1,25 @@
+name: Check AWS deployment authentication
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  check-auth:
+    if: github.head_ref == 'agent/diagnose-live-deploy'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Report configured authentication methods
+        env:
+          ROLE_ARN: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          [[ -n "$ROLE_ARN" ]] && echo 'OIDC role: configured' || echo 'OIDC role: missing'
+          if [[ -n "$ACCESS_KEY" && -n "$SECRET_KEY" ]]; then
+            echo 'Static credentials: configured'
+          else
+            echo 'Static credentials: missing'
+          fi
