@@ -1,33 +1,93 @@
-name: Diagnose AWS deployment credentials
+name: Validate and deploy SozoRock AI Lab to AWS
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
 permissions:
   id-token: write
   contents: read
+concurrency:
+  group: sozorock-ai-lab-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  diagnose:
-    if: github.head_ref == 'agent/diagnose-live-deploy'
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20, cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate policy pages
+        run: npm run generate:legal
+      - name: Render CloudFormation
+        run: npm run generate:cloudformation
+      - name: Content and link checks
+        run: npm run test:content
+      - name: SEO and schema checks
+        run: npm run test:seo
+      - name: Accessibility checks
+        run: npm run test:accessibility
+      - name: Security checks
+        run: npm run test:security
+      - name: Production build
+        run: npm run build
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
     runs-on: ubuntu-latest
     environment: production
     env:
+      STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      SITE_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET }}
       DOMAIN_NAME: ${{ vars.AI_LAB_DOMAIN || 'ai-lab.sozorockfoundation.org' }}
+      CERTIFICATE_ARN: ${{ secrets.AWS_ACM_CERTIFICATE_ARN }}
+      HOSTED_ZONE_ID: ${{ secrets.AWS_ROUTE53_HOSTED_ZONE_ID }}
+      SENDER_EMAIL: ${{ vars.SENDER_EMAIL || 'contact@sozorockfoundation.org' }}
+      INTERNAL_NOTIFICATION_EMAIL: ${{ vars.INTERNAL_NOTIFICATION_EMAIL || 'contact@sozorockfoundation.org' }}
+      FULL_APPLICATION_URL: ${{ secrets.FULL_APPLICATION_URL }}
+      ALLOWED_ORIGIN: ${{ vars.ALLOWED_ORIGIN || 'https://ai-lab.sozorockfoundation.org' }}
+      APPLICATION_RATE_LIMIT: ${{ vars.APPLICATION_RATE_LIMIT || '5' }}
+      APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20, cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Validate core deployment secrets
         run: |
           test -n "${{ secrets.AWS_ROLE_TO_ASSUME }}" || { echo 'AWS_ROLE_TO_ASSUME is missing'; exit 1; }
-          test -n "${{ secrets.AWS_S3_BUCKET }}" || { echo 'AWS_S3_BUCKET is missing'; exit 1; }
-          echo 'Core production deployment secrets are configured'
-      - name: Configure AWS credentials once
+          test -n "${SITE_BUCKET_NAME}" || { echo 'AWS_S3_BUCKET is missing'; exit 1; }
+      - name: Create deployment receipt
+        run: |
+          printf '{"commit":"%s","run_id":"%s","deployed_at":"%s"}\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > site/deployment.json
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
-          disable-retry: true
-      - name: Confirm AWS identity and existing stack
+      - name: Deploy infrastructure and site
+        run: bash scripts/deploy-aws.sh
+      - name: Production smoke and security-header test
         run: |
-          aws sts get-caller-identity
-          aws cloudformation describe-stacks --region "$AWS_REGION" --stack-name sozorock-ai-lab --query 'Stacks[0].{Status:StackStatus,Outputs:Outputs}' --output json
-          echo "domain=${DOMAIN_NAME}"
+          set -euo pipefail
+          base="https://${DOMAIN_NAME}"
+          for path in / /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
+            curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null
+          done
+          headers="$(curl --retry 8 --retry-delay 8 -fsSI "${base}/")"
+          grep -qi '^content-security-policy:' <<<"$headers"
+          grep -qi '^strict-transport-security:' <<<"$headers"
+          grep -qi '^x-content-type-options: nosniff' <<<"$headers"
+          grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
+          grep -qi '^permissions-policy:' <<<"$headers"
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Use AI for work you already do.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null
