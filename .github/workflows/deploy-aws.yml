@@ -57,6 +57,7 @@ jobs:
       STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
       AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME || 'arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole' }}
+      EXISTING_RESPONSE_HEADERS_POLICY_ID: ${{ vars.EXISTING_RESPONSE_HEADERS_POLICY_ID || '8f64e954-90e0-49ec-aefb-aae19c5873a8' }}
       SITE_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET }}
       DOMAIN_NAME: ${{ vars.AI_LAB_DOMAIN || 'ai-lab.sozorockfoundation.org' }}
       CERTIFICATE_ARN: ${{ secrets.AWS_ACM_CERTIFICATE_ARN }}
