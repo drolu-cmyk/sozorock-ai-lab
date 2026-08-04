@@ -78,6 +78,10 @@ repository variable (not a secret):
 AWS_ROLE_TO_ASSUME=arn:aws:iam::<account-id>:role/<role-name>
 ```
 
+The production workflow also defaults to the verified active response-headers
+policy. Set `EXISTING_RESPONSE_HEADERS_POLICY_ID` only when intentionally
+deploying another stack or AWS account.
+
 Recommended variables:
 
 ```text
