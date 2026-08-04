@@ -4,13 +4,18 @@ const moduleCards = [...document.querySelectorAll(".module-card")];
 const result = document.querySelector("#filter-result");
 const noResults = document.querySelector("#no-results");
 
+function normalizeSearchText(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function filterModules() {
-  const search = (searchInput.value || "").trim().toLowerCase();
+  const search = normalizeSearchText(searchInput.value);
   const status = statusFilter.value;
   let visible = 0;
 
   moduleCards.forEach((card) => {
-    const matchesSearch = !search || card.dataset.search.includes(search);
+    const searchableText = normalizeSearchText(`${card.dataset.search} ${card.textContent}`);
+    const matchesSearch = !search || searchableText.includes(search);
     const matchesStatus = status === "all" || card.dataset.status === status;
     const show = matchesSearch && matchesStatus;
     card.hidden = !show;
