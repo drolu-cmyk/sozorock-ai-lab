@@ -13,6 +13,7 @@ for (const slug of slugs) {
   source = source.replace(/<footer class="site-footer">[\s\S]*?<\/footer>/, footer);
   source = source.replace(internalNote, '');
   source = source.replaceAll('SozoRock AI Lab', 'SozoRock AI Capability Lab');
+  source = source.replaceAll('href="/assets/css/styles.css"', 'href="/assets/css/styles.css?v=20260804-1"');
   source = source.replaceAll('July 15, 2026', 'August 4, 2026');
   source = source.replaceAll('2026-07-15', '2026-08-04');
   source = source.replace(/<title>([^<]+) \| SozoRock AI Capability Lab<\/title>/, '<title>$1 | SozoRock</title>');
