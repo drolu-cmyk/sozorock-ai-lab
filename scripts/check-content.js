@@ -57,7 +57,7 @@ if (!js.includes("fetch('/api/applications/start'")) failures.push('Application 
 if (!js.includes('formStartedAt')) failures.push('Form timing signal is missing.');
 if (!html.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
 if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
-if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
+if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');\nif (!html.includes('id="learning"')) failures.push('Legacy legal-page learning anchor is missing.');
 
 const htmlFiles = [];
 (function walk(dir) {
