@@ -62,6 +62,7 @@
         "cloudformation:DescribeChangeSet",
         "cloudformation:ExecuteChangeSet",
         "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackResource",
         "cloudformation:DescribeStackEvents",
         "cloudformation:GetTemplate"
       ],
