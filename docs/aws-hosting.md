@@ -101,20 +101,3 @@ The script creates the GitHub OIDC provider when missing, creates the dedicated 
 
 This command must be run with an AWS administrator identity that can manage IAM OIDC providers, roles, and inline policies. It does not change the application code or the Health repositories.
 
-### Optional GitHub admin bootstrap fallback
-
-The deployment workflow can reconcile the dedicated role automatically when the approved AWS administrator credentials are already stored as GitHub repository secrets. It recognizes either:
-
-```txt
-AWS_ADMIN_ACCESS_KEY_ID / AWS_ADMIN_SECRET_ACCESS_KEY
-AWS_ADMIN_SESSION_TOKEN (only when the administrator uses temporary credentials)
-```
-
-or the standard names:
-
-```txt
-AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-AWS_SESSION_TOKEN (only when the administrator uses temporary credentials)
-```
-
-Those credentials are used only by the main-branch/manual deployment job to run the role-reconciliation script; the deployment then assumes `AWS_ROLE_TO_ASSUME` for the actual site deployment. They must be configured as encrypted GitHub secrets and must never be committed to the repository. If these secrets are absent, the workflow uses GitHub OIDC directly.
