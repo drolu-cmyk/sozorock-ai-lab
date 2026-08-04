@@ -1,6 +1,5 @@
   ApplicationsFunction:
     Type: AWS::Lambda::Function
-    DependsOn: ApplicationsFunctionLogGroup
     Properties:
       FunctionName: !Sub '${AWS::StackName}-applications'
       Runtime: nodejs20.x
@@ -8,7 +7,6 @@
       Role: !GetAtt ApplicationsFunctionRole.Arn
       Timeout: 10
       MemorySize: 256
-      ReservedConcurrentExecutions: 10
       Environment:
         Variables:
           TABLE_NAME: !Ref ApplicationsTable
