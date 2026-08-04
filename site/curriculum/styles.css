@@ -5,7 +5,7 @@
   --white: #ffffff;
   --line: #dce2db;
   --green: #9ecb75;
-  --green-dark: #5e873d;
+  --green-dark: #3f6429;
   --blue: #b7d8ed;
   --sand: #e8dfcf;
   --max: 1180px;
@@ -168,4 +168,16 @@ h1 { max-width: 720px; margin-bottom: 23px; font-size: clamp(48px, 7.3vw, 92px);
 
 @media (max-width: 390px) {
   .module-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
