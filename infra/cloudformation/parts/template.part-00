@@ -13,6 +13,10 @@ Parameters:
   HostedZoneId:
     Type: String
     Default: ''
+  ExistingResponseHeadersPolicyId:
+    Type: String
+    Default: ''
+    Description: Optional existing CloudFront response headers policy ID to reuse.
   SenderEmail:
     Type: String
     Default: contact@sozorockfoundation.org
@@ -40,6 +44,8 @@ Conditions:
   HasDomain: !Not [!Equals [!Ref DomainName, '']]
   HasCertificate: !Not [!Equals [!Ref CertificateArn, '']]
   HasHostedZone: !And [!Condition HasDomain, !Not [!Equals [!Ref HostedZoneId, '']]]
+  UseExistingResponseHeadersPolicy: !Not [!Equals [!Ref ExistingResponseHeadersPolicyId, '']]
+  CreateSecurityHeadersPolicy: !Equals [!Ref ExistingResponseHeadersPolicyId, '']
 
 Resources:
   SiteBucket:
