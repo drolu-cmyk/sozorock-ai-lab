@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10241f" />
+    <meta
+      name="description"
+      content="A hands-on SozoRock curriculum for applied AI, cybersecurity, and AI governance."
+    />
+    <title>SozoRock AI Capability Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="SozoRock AI Capability Lab home">
+        <span class="brand-mark">SR</span>
+        <span>
+          <strong>SozoRock</strong>
+          <small>AI Capability Lab</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#curriculum">Curriculum</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#guardrails">Guardrails</a>
+        <a class="nav-link" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum" target="_blank" rel="noreferrer">Repository <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero section-wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">PUBLIC PILOT CURRICULUM · 2026</p>
+          <h1>Build AI capability that holds up in real work.</h1>
+          <p class="hero-lede">
+            A hands-on path from a useful AI idea to a tested, secured, governed, and clearly explained system.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#curriculum">Explore the curriculum <span aria-hidden="true">↓</span></a>
+            <a class="button button-secondary" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/blob/main/learner/START_HERE.md" target="_blank" rel="noreferrer">Start as a learner <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero-notes" aria-label="Release details">
+            <span>13 modules</span>
+            <span>Applied AI · Cybersecurity · GRC</span>
+            <span>Open curriculum</span>
+          </div>
+        </div>
+        <aside class="hero-card" aria-label="Program outcome">
+          <p class="card-label">PROGRAM OUTCOME</p>
+          <h2>Move from “we should use AI” to “here is the evidence.”</h2>
+          <p>
+            Learners produce artifacts that show what the system does, where it can fail, who approves its actions, and how it should be improved.
+          </p>
+          <div class="card-rule"></div>
+          <a href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/blob/main/CURRICULUM_MAP.md" target="_blank" rel="noreferrer">Read the curriculum map <span aria-hidden="true">↗</span></a>
+        </aside>
+      </section>
+
+      <section class="principles section-wrap" id="how-it-works">
+        <div class="section-heading">
+          <p class="eyebrow">THE METHOD</p>
+          <h2>Capability comes from a repeatable practice.</h2>
+          <p>Each mission asks learners to make a decision, create evidence, test an assumption, and explain the result.</p>
+        </div>
+        <div class="method-grid">
+          <div class="method-step"><span>01</span><strong>Understand</strong><p>Define the user, task, and boundary.</p></div>
+          <div class="method-step"><span>02</span><strong>Observe</strong><p>Study the current process and its limits.</p></div>
+          <div class="method-step"><span>03</span><strong>Build</strong><p>Create the smallest useful workflow.</p></div>
+          <div class="method-step"><span>04</span><strong>Break</strong><p>Test failure modes and unsafe requests.</p></div>
+          <div class="method-step"><span>05</span><strong>Improve</strong><p>Change the design based on evidence.</p></div>
+          <div class="method-step"><span>06</span><strong>Document</strong><p>Record decisions, controls, and limits.</p></div>
+          <div class="method-step"><span>07</span><strong>Explain</strong><p>Brief the people who must use or govern it.</p></div>
+        </div>
+      </section>
+
+      <section class="curriculum section-wrap" id="curriculum">
+        <div class="section-heading section-heading-row">
+          <div>
+            <p class="eyebrow">CURRICULUM MAP</p>
+            <h2>Thirteen modules. One progressive capstone.</h2>
+            <p>Choose a starting point below, then open the full learner mission, trainer guide, rubric, and debrief in the repository.</p>
+          </div>
+          <div class="filters" role="search">
+            <label class="sr-only" for="module-search">Search modules</label>
+            <input id="module-search" type="search" placeholder="Search modules" autocomplete="off" />
+            <label class="sr-only" for="status-filter">Filter by status</label>
+            <select id="status-filter">
+              <option value="all">All statuses</option>
+              <option value="pilot complete">Pilot complete</option>
+              <option value="pilot build">Pilot build</option>
+              <option value="complete draft">Complete draft</option>
+            </select>
+          </div>
+        </div>
+        <p class="filter-result" id="filter-result" aria-live="polite"></p>
+        <div class="module-grid" id="module-grid">
+          <a class="module-card" data-status="complete draft" data-search="orientation safe lab practice learner agreement baseline" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/00-orientation" target="_blank" rel="noreferrer"><span class="module-number">M00</span><h3>Orientation and safe lab practice</h3><p>Learner agreement and baseline</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="pilot complete" data-search="ai use case framing use case canvas" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/01-ai-use-case" target="_blank" rel="noreferrer"><span class="module-number">M01</span><h3>AI use-case framing</h3><p>AI use-case canvas</p><span class="module-status module-status-green">Pilot complete</span></a>
+          <a class="module-card" data-status="pilot build" data-search="model behavior interaction design prompt test set" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/02-model-behavior" target="_blank" rel="noreferrer"><span class="module-number">M02</span><h3>Model behavior and interaction design</h3><p>Prompt and interaction test set</p><span class="module-status module-status-blue">Pilot build</span></a>
+          <a class="module-card" data-status="pilot build" data-search="data retrieval citations source knowledge map rag" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/03-data-and-rag" target="_blank" rel="noreferrer"><span class="module-number">M03</span><h3>Data, retrieval, and citations</h3><p>Source and knowledge map</p><span class="module-status module-status-blue">Pilot build</span></a>
+          <a class="module-card" data-status="complete draft" data-search="structured workflows automation workflow specification" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/04-workflows" target="_blank" rel="noreferrer"><span class="module-number">M04</span><h3>Structured workflows and automation</h3><p>Workflow specification</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="agents tools permissions action map" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/05-agents" target="_blank" rel="noreferrer"><span class="module-number">M05</span><h3>Agents, tools, and permissions</h3><p>Agent action map</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="evaluation monitoring evaluation report" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/06-evaluation" target="_blank" rel="noreferrer"><span class="module-number">M06</span><h3>Evaluation and monitoring</h3><p>Evaluation report</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="ai cybersecurity threat model attack log" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/07-ai-security" target="_blank" rel="noreferrer"><span class="module-number">M07</span><h3>AI cybersecurity</h3><p>Threat model and safe attack log</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="secure design incident response control plan playbook" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/08-secure-design" target="_blank" rel="noreferrer"><span class="module-number">M08</span><h3>Secure design and incident response</h3><p>Security control plan and playbook</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="ai governance risk inventory risk register" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/09-ai-governance" target="_blank" rel="noreferrer"><span class="module-number">M09</span><h3>AI governance and risk</h3><p>AI system inventory and risk register</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="grc implementation control matrix evidence plan" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/10-grc-controls" target="_blank" rel="noreferrer"><span class="module-number">M10</span><h3>GRC implementation</h3><p>Control matrix and evidence plan</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="capstone build working system evidence portfolio" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/11-capstone" target="_blank" rel="noreferrer"><span class="module-number">M11</span><h3>Capstone build</h3><p>Working system and evidence portfolio</p><span class="module-status">Complete draft</span></a>
+          <a class="module-card" data-status="complete draft" data-search="capstone defense executive briefing improvement plan" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/tree/main/modules/12-capstone-defense" target="_blank" rel="noreferrer"><span class="module-number">M12</span><h3>Capstone defense</h3><p>Executive briefing and improvement plan</p><span class="module-status">Complete draft</span></a>
+        </div>
+        <p class="no-results" id="no-results" hidden>No modules match that search.</p>
+      </section>
+
+      <section class="guardrails section-wrap" id="guardrails">
+        <div class="guardrail-intro">
+          <p class="eyebrow">SAFE LAB BOUNDARY</p>
+          <h2>Capability without careless access.</h2>
+          <p>The lab keeps learning useful by keeping the boundaries explicit. The full policy and setup guide live in the repository.</p>
+          <a class="text-link" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/blob/main/policies/lab-safety.md" target="_blank" rel="noreferrer">Read the lab-safety policy <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="guardrail-list">
+          <div><span class="guardrail-icon">01</span><p><strong>Use safe data.</strong> Work with synthetic, public, or properly de-identified material.</p></div>
+          <div><span class="guardrail-icon">02</span><p><strong>Stay authorized.</strong> Test only supplied targets or systems with written permission.</p></div>
+          <div><span class="guardrail-icon">03</span><p><strong>Keep a human boundary.</strong> Side effects require explicit approval and reversible steps.</p></div>
+          <div><span class="guardrail-icon">04</span><p><strong>Preserve evidence.</strong> Record the test, expected result, actual result, and reviewer decision.</p></div>
+        </div>
+      </section>
+
+      <section class="entry-points section-wrap">
+        <div class="entry-card">
+          <p class="card-label">FOR LEARNERS</p>
+          <h2>Start with a mission, not a lecture.</h2>
+          <p>Follow the core path, build an evidence artifact, and use the rubric to understand what good looks like.</p>
+          <a class="text-link" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/blob/main/learner/START_HERE.md" target="_blank" rel="noreferrer">Open learner start guide <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="entry-card entry-card-dark">
+          <p class="card-label">FOR TRAINERS</p>
+          <h2>Run a cohort with a clear quality gate.</h2>
+          <p>Use the runbook, module QA checklist, accessibility guidance, and assessment operations to deliver safely.</p>
+          <a class="text-link" href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum/blob/main/trainer/COHORT_RUNBOOK.md" target="_blank" rel="noreferrer">Open trainer runbook <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-wrap">
+      <div>
+        <p class="footer-brand">SozoRock AI Capability Lab</p>
+        <p>Applied AI, cybersecurity, and governance practice for people and organizations that need evidence before adoption.</p>
+      </div>
+      <div class="footer-meta">
+        <p>© 2026 Dr. Oluwabiyi Adeyemo</p>
+        <p>Curriculum content licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>.</p>
+        <a href="https://github.com/drolu-cmyk/sozorock-ai-capability-curriculum" target="_blank" rel="noreferrer">View source on GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </footer>
+  </body>
+</html>
