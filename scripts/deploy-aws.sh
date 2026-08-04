@@ -73,6 +73,28 @@ if [[ -n "$DOMAIN_NAME" && -z "$CERTIFICATE_ARN" ]]; then
   exit 1
 fi
 
+ensure_log_group() {
+  local log_group_name="$1"
+  local existing
+  existing="$(aws logs describe-log-groups \
+    --region "$AWS_REGION" \
+    --log-group-name-prefix "$log_group_name" \
+    --query "logGroups[?logGroupName=='$log_group_name'].logGroupName | [0]" \
+    --output text)"
+  if [[ "$existing" == "None" || -z "$existing" ]]; then
+    aws logs create-log-group \
+      --region "$AWS_REGION" \
+      --log-group-name "$log_group_name"
+  fi
+  aws logs put-retention-policy \
+    --region "$AWS_REGION" \
+    --log-group-name "$log_group_name" \
+    --retention-in-days 30
+}
+
+ensure_log_group "/aws/lambda/${STACK_NAME}-applications"
+ensure_log_group "/aws/apigateway/${STACK_NAME}-applications"
+
 bash scripts/render-cloudformation.sh "$TEMPLATE" >/dev/null
 npm test
 aws cloudformation validate-template --region "$AWS_REGION" --template-body "file://$TEMPLATE" >/dev/null
