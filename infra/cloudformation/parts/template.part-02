@@ -20,14 +20,6 @@
             }
           };
 
-  ApplicationsFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-applications'
-      RetentionInDays: 30
-
   ApplicationsHttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -38,14 +30,6 @@
         AllowMethods: [POST, OPTIONS]
         AllowHeaders: [content-type]
         MaxAge: 300
-
-  ApplicationsApiLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      LogGroupName: !Sub '/aws/apigateway/${AWS::StackName}-applications'
-      RetentionInDays: 30
 
   ApplicationsIntegration:
     Type: AWS::ApiGatewayV2::Integration
@@ -80,7 +64,7 @@
         ThrottlingRateLimit: !Ref ApplicationRateLimit
         ThrottlingBurstLimit: !Ref ApplicationBurstLimit
       AccessLogSettings:
-        DestinationArn: !GetAtt ApplicationsApiLogGroup.Arn
+        DestinationArn: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${AWS::StackName}-applications:*'
         Format: '{"requestId":"$context.requestId","routeKey":"$context.routeKey","status":"$context.status","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}'
 
   ApplicationsFunctionPermission:
