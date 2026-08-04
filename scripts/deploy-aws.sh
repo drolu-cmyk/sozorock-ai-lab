@@ -35,7 +35,10 @@ get_parameter() {
 }
 
 not_none() {
-  [[ -n "$1" && "$1" != "None" ]] && printf '%s' "$1"
+  if [[ -n "$1" && "$1" != "None" ]]; then
+    printf '%s' "$1"
+  fi
+  return 0
 }
 
 print_failed_events() {
