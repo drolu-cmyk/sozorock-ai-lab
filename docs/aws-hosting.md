@@ -79,7 +79,7 @@ AWS_S3_BUCKET=your-site-bucket
 AWS_CLOUDFRONT_DISTRIBUTION_ID=E1234567890
 ```
 
-The minimum deployment permissions are in `infra/iam/github-actions-deploy-policy.json`.
+The deployment permissions are in `infra/iam/github-actions-deploy-policy.json`.
 
 ### Bootstrap or repair the dedicated role
 
@@ -92,6 +92,6 @@ export SITE_BUCKET_NAME=your-existing-ai-lab-bucket
 bash scripts/configure-github-oidc-trust.sh GitHubActionsSozorockAiLabDeployRole "$SITE_BUCKET_NAME"
 ```
 
-The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the least repository-scoped deployment policy checked into this repository. It prints the exact role ARN. Set that ARN as the GitHub repository secret `AWS_ROLE_TO_ASSUME`, then rerun the AI Lab workflow.
+The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the checked-in deployment policy with the target bucket and account rendered into it. It prints the exact role ARN. Set that ARN as the GitHub repository secret `AWS_ROLE_TO_ASSUME`, then rerun the AI Lab workflow.
 
 This command must be run with an AWS administrator identity that can manage IAM OIDC providers, roles, and inline policies. It does not change the application code or the Health repositories.
