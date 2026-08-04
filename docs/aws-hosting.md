@@ -88,10 +88,15 @@ The current failure is at `Configure AWS credentials`, before CloudFormation or 
 ```bash
 export AWS_ACCOUNT_ID=791860731989
 export SITE_BUCKET_NAME=your-existing-ai-lab-bucket
+export STACK_NAME=sozorock-ai-lab
 
-bash scripts/configure-github-oidc-trust.sh GitHubActionsSozorockAiLabDeployRole "$SITE_BUCKET_NAME"
+# Default role name; one positional argument is the bucket.
+bash scripts/configure-github-oidc-trust.sh "$SITE_BUCKET_NAME"
+
+# Equivalent explicit form:
+bash scripts/configure-github-oidc-trust.sh GitHubActionsSozorockAiLabDeployRole "$SITE_BUCKET_NAME" "$STACK_NAME"
 ```
 
-The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the checked-in deployment policy with the target bucket and account rendered into it. It prints the exact role ARN. Set that ARN as the GitHub repository secret `AWS_ROLE_TO_ASSUME`, then rerun the AI Lab workflow.
+The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the checked-in deployment policy with the target bucket, account, and stack rendered into it. It prints the exact role ARN. Set that ARN as the GitHub repository secret `AWS_ROLE_TO_ASSUME`, then rerun the AI Lab workflow.
 
 This command must be run with an AWS administrator identity that can manage IAM OIDC providers, roles, and inline policies. It does not change the application code or the Health repositories.
