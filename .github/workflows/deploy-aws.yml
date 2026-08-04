@@ -53,7 +53,8 @@ jobs:
       )
     needs: validate
     runs-on: ubuntu-latest
-    environment: production
+    # Use the main-branch OIDC subject for automated deployment.
+    # This matches the dedicated AI Lab role trust policy.
     env:
       STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
