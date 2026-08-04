@@ -86,7 +86,7 @@ The deployment permissions are in `infra/iam/github-actions-deploy-policy.json`.
 
 ### Bootstrap or repair the dedicated role
 
-The current failure is at `Configure AWS credentials`, before CloudFormation or S3 runs. An AWS administrator must run the following once from account `791860731989` (or set `AWS_ACCOUNT_ID` to the intended account):
+The dedicated GitHub Actions role is configured in AWS account `791860731989`. The following command is retained as an idempotent recovery procedure if the OIDC trust policy or deployment permissions ever drift:
 
 ```bash
 export AWS_ACCOUNT_ID=791860731989
