@@ -4,6 +4,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # Validate every PR update; deploy only after a confirmed merge.
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
 permissions:
   id-token: write
@@ -16,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.merge_commit_sha || github.sha }}
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.merge_commit_sha || github.sha }}
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
@@ -34,7 +40,19 @@ jobs:
       - name: Production build
         run: npm run build
   deploy:
-    if: github.event_name != 'pull_request'
+    # Pull-request validation remains read-only. A merged pull_request:closed event
+    # is the deploy trigger as well as pushes and manual dispatches.
+    if: >
+      needs.validate.result == 'success' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.merged == true
+        )
+      )
     needs: validate
     runs-on: ubuntu-latest
     environment: production
@@ -75,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           base="https://${DOMAIN_NAME}"
-          for path in / /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
+          for path in / /curriculum/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
             curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null
           done
           headers="$(curl --retry 8 --retry-delay 8 -fsSI "${base}/")"
@@ -88,6 +106,8 @@ jobs:
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'SozoRock AI Capability Lab' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'Build AI capability that holds up in real work.' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null
