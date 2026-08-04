@@ -70,11 +70,14 @@ Then ensure the existing `www.sozorockfoundation.org` CloudFront distribution se
 
 Use the workflow in `.github/workflows/deploy-aws.yml`.
 
-Repository variables/secrets:
+Repository configuration:
 
 ```txt
-AWS_ROLE_TO_ASSUME=arn:aws:iam::ACCOUNTID:role/GitHubActionsSozorockAiLabDeployRole
+# Optional variable override; the workflow defaults to the dedicated role below.
+AWS_ROLE_TO_ASSUME=arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole
 AWS_REGION=us-east-1
+
+# Existing deployment secrets.
 AWS_S3_BUCKET=your-site-bucket
 AWS_CLOUDFRONT_DISTRIBUTION_ID=E1234567890
 ```
@@ -97,7 +100,9 @@ bash scripts/configure-github-oidc-trust.sh "$SITE_BUCKET_NAME"
 bash scripts/configure-github-oidc-trust.sh GitHubActionsSozorockAiLabDeployRole "$SITE_BUCKET_NAME" "$STACK_NAME"
 ```
 
-The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the checked-in deployment policy with the target bucket, account, and stack rendered into it. It prints the exact role ARN. Set that ARN as the GitHub repository secret `AWS_ROLE_TO_ASSUME`, then rerun the AI Lab workflow.
+The script creates the GitHub OIDC provider when missing, creates the dedicated role when missing, reconciles its trust policy, and attaches the checked-in deployment policy with the target bucket, account, and stack rendered into it. It prints the exact role ARN. The workflow already defaults to `arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole`, so no role secret is required when the default role is used. Set the repository variable `AWS_ROLE_TO_ASSUME` only when intentionally using a different role.
+
+After this one-time trust bootstrap, every push to `main` automatically validates, builds, deploys through CloudFormation and S3, invalidates CloudFront, and runs the production smoke tests. No AWS administrator credentials are stored in GitHub.
 
 This command must be run with an AWS administrator identity that can manage IAM OIDC providers, roles, and inline policies. It does not change the application code or the Health repositories.
 
