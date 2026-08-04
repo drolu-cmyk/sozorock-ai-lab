@@ -26,6 +26,9 @@ body {
 
 a { color: inherit; }
 
+.skip-link { position: absolute; left: -9999px; top: 16px; z-index: 50; padding: 10px 14px; border-radius: 8px; color: var(--white); background: var(--ink); font-size: 13px; font-weight: 750; }
+.skip-link:focus { left: 16px; }
+
 .section-wrap { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
 
 .site-header {
