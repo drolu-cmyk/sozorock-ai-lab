@@ -60,14 +60,22 @@ Application records expire after approximately two years unless lawful operation
 
 Pushes to `main` run validation, deploy the CloudFormation stack through GitHub OIDC, synchronize the site to S3, invalidate CloudFront, wait for invalidation, and run live route, metadata, and security-header smoke tests.
 
-Required secrets:
+Required repository secret:
 
 ```text
-AWS_ROLE_TO_ASSUME
 AWS_S3_BUCKET
-AWS_ACM_CERTIFICATE_ARN
-AWS_ROUTE53_HOSTED_ZONE_ID
-FULL_APPLICATION_URL
+```
+
+For the first custom-domain deployment, also set `AWS_ACM_CERTIFICATE_ARN` and
+`AWS_ROUTE53_HOSTED_ZONE_ID` as repository secrets. Existing stacks reuse their
+stored values automatically. `FULL_APPLICATION_URL` is optional.
+
+The workflow defaults to the dedicated OIDC role in AWS account `791860731989`.
+Only when intentionally deploying with another account or role, set this
+repository variable (not a secret):
+
+```text
+AWS_ROLE_TO_ASSUME=arn:aws:iam::<account-id>:role/<role-name>
 ```
 
 Recommended variables:
