@@ -14,7 +14,8 @@ function filterModules() {
   let visible = 0;
 
   moduleCards.forEach((card) => {
-    const searchableText = normalizeSearchText(`${card.dataset.search} ${card.textContent}`);
+    const visibleCardText = [...card.children].map((field) => field.textContent).join(" ");
+    const searchableText = normalizeSearchText(`${card.dataset.search} ${visibleCardText}`);
     const matchesSearch = !search || searchableText.includes(search);
     const matchesStatus = status === "all" || card.dataset.status === status;
     const show = matchesSearch && matchesStatus;
