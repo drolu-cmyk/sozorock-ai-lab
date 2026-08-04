@@ -1,5 +1,5 @@
 const searchInput = document.querySelector("#module-search");
-const statusFilter = document.querySelector("#status-filter");
+const availabilityFilter = document.querySelector("#availability-filter");
 const moduleCards = [...document.querySelectorAll(".module-card")];
 const result = document.querySelector("#filter-result");
 const noResults = document.querySelector("#no-results");
@@ -10,22 +10,22 @@ function normalizeSearchText(value) {
 
 function filterModules() {
   const search = normalizeSearchText(searchInput.value);
-  const status = statusFilter.value;
+  const availability = availabilityFilter.value;
   let visible = 0;
 
   moduleCards.forEach((card) => {
     const visibleCardText = [...card.children].map((field) => field.textContent).join(" ");
     const searchableText = normalizeSearchText(`${card.dataset.search} ${visibleCardText}`);
     const matchesSearch = !search || searchableText.includes(search);
-    const matchesStatus = status === "all" || card.dataset.status === status;
-    const show = matchesSearch && matchesStatus;
+    const matchesAvailability = availability === "all" || card.dataset.availability === availability;
+    const show = matchesSearch && matchesAvailability;
     card.hidden = !show;
     if (show) visible += 1;
   });
 
-  result.textContent = search || status !== "all" ? `${visible} module${visible === 1 ? "" : "s"} shown` : "";
+  result.textContent = search || availability !== "all" ? `${visible} module${visible === 1 ? "" : "s"} shown` : "";
   noResults.hidden = visible !== 0;
 }
 
 searchInput.addEventListener("input", filterModules);
-statusFilter.addEventListener("change", filterModules);
+availabilityFilter.addEventListener("change", filterModules);
