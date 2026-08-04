@@ -1,6 +1,9 @@
 
   SecurityHeadersPolicy:
     Type: AWS::CloudFront::ResponseHeadersPolicy
+    Condition: CreateSecurityHeadersPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       ResponseHeadersPolicyConfig:
         Name: !Sub '${AWS::StackName}-security-headers-v2'
@@ -21,6 +24,9 @@
           ReferrerPolicy:
             ReferrerPolicy: strict-origin-when-cross-origin
             Override: true
+          XSSProtection:
+            Protection: false
+            Override: true
         CustomHeadersConfig:
           Items:
             - Header: Permissions-Policy
@@ -37,9 +43,6 @@
               Override: true
             - Header: X-DNS-Prefetch-Control
               Value: off
-              Override: true
-            - Header: X-XSS-Protection
-              Value: '0'
               Override: true
 
   CloudFrontDistribution:
@@ -82,7 +85,10 @@
             MinTTL: 0
             DefaultTTL: 0
             MaxTTL: 0
-            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            ResponseHeadersPolicyId: !If
+              - UseExistingResponseHeadersPolicy
+              - !Ref ExistingResponseHeadersPolicyId
+              - !Ref SecurityHeadersPolicy
             ForwardedValues:
               QueryString: false
               Headers:
@@ -97,7 +103,10 @@
           AllowedMethods: [GET, HEAD, OPTIONS]
           CachedMethods: [GET, HEAD, OPTIONS]
           Compress: true
-          ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+          ResponseHeadersPolicyId: !If
+            - UseExistingResponseHeadersPolicy
+            - !Ref ExistingResponseHeadersPolicyId
+            - !Ref SecurityHeadersPolicy
           FunctionAssociations:
             - EventType: viewer-request
               FunctionARN: !GetAtt UrlRewriteFunction.FunctionMetadata.FunctionARN

@@ -29,14 +29,13 @@
 
 ## Required repository secrets and variables
 Secrets:
-- `AWS_ROLE_TO_ASSUME`
 - `AWS_S3_BUCKET`
-- `AWS_ACM_CERTIFICATE_ARN`
-- `AWS_ROUTE53_HOSTED_ZONE_ID`
-- `FULL_APPLICATION_URL`
-- `ADMIN_API_SECRET`
+- `AWS_ACM_CERTIFICATE_ARN` for the first custom-domain deployment; existing stacks reuse the stored value
+- `AWS_ROUTE53_HOSTED_ZONE_ID` for the first custom-domain deployment; existing stacks reuse the stored value
+- `FULL_APPLICATION_URL` when selected applicants should receive an external application URL
 
 Variables:
+- `AWS_ROLE_TO_ASSUME` is optional and must be set only when intentionally overriding the dedicated default OIDC role
 - `AWS_REGION` defaults to `us-east-1`
 - `AI_LAB_DOMAIN` defaults to `ai-lab.sozorockfoundation.org`
 - `SENDER_EMAIL` defaults to `contact@sozorockfoundation.org`

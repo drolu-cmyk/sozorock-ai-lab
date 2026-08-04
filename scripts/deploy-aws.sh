@@ -8,6 +8,7 @@ SITE_BUCKET_NAME="${SITE_BUCKET_NAME:?Set SITE_BUCKET_NAME}"
 DOMAIN_NAME="${DOMAIN_NAME:-ai-lab.sozorockfoundation.org}"
 CERTIFICATE_ARN="${CERTIFICATE_ARN:-}"
 HOSTED_ZONE_ID="${HOSTED_ZONE_ID:-}"
+EXISTING_RESPONSE_HEADERS_POLICY_ID="${EXISTING_RESPONSE_HEADERS_POLICY_ID:-}"
 SENDER_EMAIL="${SENDER_EMAIL:-contact@sozorockfoundation.org}"
 INTERNAL_NOTIFICATION_EMAIL="${INTERNAL_NOTIFICATION_EMAIL:-contact@sozorockfoundation.org}"
 FULL_APPLICATION_URL="${FULL_APPLICATION_URL:-}"
@@ -33,10 +34,38 @@ get_parameter() {
     --output text
 }
 
+not_none() {
+  if [[ -n "$1" && "$1" != "None" ]]; then
+    printf '%s' "$1"
+  fi
+  return 0
+}
+
+print_failed_events() {
+  echo "Recent failed CloudFormation events:" >&2
+  aws cloudformation describe-stack-events \
+    --region "$AWS_REGION" \
+    --stack-name "$STACK_NAME" \
+    --query "StackEvents[?contains(ResourceStatus, 'FAILED')].[Timestamp,LogicalResourceId,ResourceType,ResourceStatus,ResourceStatusReason]" \
+    --output table >&2 || true
+}
+
 if [[ "$stack_exists" == true ]]; then
-  [[ -n "$CERTIFICATE_ARN" ]] || CERTIFICATE_ARN="$(get_parameter CertificateArn)"
-  [[ -n "$HOSTED_ZONE_ID" ]] || HOSTED_ZONE_ID="$(get_parameter HostedZoneId)"
-  [[ -n "$FULL_APPLICATION_URL" ]] || FULL_APPLICATION_URL="$(get_parameter FullApplicationUrl)"
+  [[ -n "$CERTIFICATE_ARN" ]] || CERTIFICATE_ARN="$(not_none "$(get_parameter CertificateArn)")"
+  [[ -n "$HOSTED_ZONE_ID" ]] || HOSTED_ZONE_ID="$(not_none "$(get_parameter HostedZoneId)")"
+  [[ -n "$FULL_APPLICATION_URL" ]] || FULL_APPLICATION_URL="$(not_none "$(get_parameter FullApplicationUrl)")"
+  if [[ -z "$EXISTING_RESPONSE_HEADERS_POLICY_ID" ]]; then
+    EXISTING_RESPONSE_HEADERS_POLICY_ID="$(not_none "$(get_parameter ExistingResponseHeadersPolicyId)")"
+  fi
+  if [[ -z "$EXISTING_RESPONSE_HEADERS_POLICY_ID" ]]; then
+    EXISTING_RESPONSE_HEADERS_POLICY_ID="$(aws cloudformation describe-stack-resource \
+      --region "$AWS_REGION" \
+      --stack-name "$STACK_NAME" \
+      --logical-resource-id SecurityHeadersPolicy \
+      --query 'StackResourceDetail.PhysicalResourceId' \
+      --output text 2>/dev/null || true)"
+    EXISTING_RESPONSE_HEADERS_POLICY_ID="$(not_none "$EXISTING_RESPONSE_HEADERS_POLICY_ID")"
+  fi
 fi
 
 if [[ -n "$DOMAIN_NAME" && -z "$CERTIFICATE_ARN" ]]; then
@@ -48,7 +77,7 @@ bash scripts/render-cloudformation.sh "$TEMPLATE" >/dev/null
 npm test
 aws cloudformation validate-template --region "$AWS_REGION" --template-body "file://$TEMPLATE" >/dev/null
 
-aws cloudformation deploy \
+if ! aws cloudformation deploy \
   --region "$AWS_REGION" \
   --stack-name "$STACK_NAME" \
   --template-file "$TEMPLATE" \
@@ -59,12 +88,16 @@ aws cloudformation deploy \
     DomainName="$DOMAIN_NAME" \
     CertificateArn="$CERTIFICATE_ARN" \
     HostedZoneId="$HOSTED_ZONE_ID" \
+    ExistingResponseHeadersPolicyId="$EXISTING_RESPONSE_HEADERS_POLICY_ID" \
     SenderEmail="$SENDER_EMAIL" \
     InternalNotificationEmail="$INTERNAL_NOTIFICATION_EMAIL" \
     FullApplicationUrl="$FULL_APPLICATION_URL" \
     AllowedOrigin="$ALLOWED_ORIGIN" \
     ApplicationRateLimit="$APPLICATION_RATE_LIMIT" \
-    ApplicationBurstLimit="$APPLICATION_BURST_LIMIT"
+    ApplicationBurstLimit="$APPLICATION_BURST_LIMIT"; then
+  print_failed_events
+  exit 1
+fi
 
 get_output() {
   aws cloudformation describe-stacks \
