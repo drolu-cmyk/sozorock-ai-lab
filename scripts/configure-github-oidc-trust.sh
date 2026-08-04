@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROLE_NAME="${1:-GitHubActionsSozorockAiLabDeployRole}"
-SITE_BUCKET_NAME="${2:-${SITE_BUCKET_NAME:-}}"
+ROLE_NAME="${ROLE_NAME:-GitHubActionsSozorockAiLabDeployRole}"
+SITE_BUCKET_NAME="${SITE_BUCKET_NAME:-}"
+STACK_NAME="${STACK_NAME:-sozorock-ai-lab}"
 ACCOUNT_ID="${AWS_ACCOUNT_ID:-791860731989}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TRUST_POLICY_TEMPLATE="$ROOT_DIR/infra/iam/github-actions-oidc-trust-policy.json"
@@ -11,14 +12,49 @@ TRUST_POLICY="$(mktemp)"
 DEPLOY_POLICY="$(mktemp)"
 trap 'rm -f "$TRUST_POLICY" "$DEPLOY_POLICY"' EXIT
 
+usage() {
+  echo "Usage: $0 [site-bucket-name]" >&2
+  echo "       $0 <iam-role-name> <site-bucket-name> [stack-name]" >&2
+  echo "Set SITE_BUCKET_NAME, STACK_NAME, or ROLE_NAME to use environment defaults." >&2
+}
+
+case "$#" in
+  0)
+    ;;
+  1)
+    if [[ -n "$SITE_BUCKET_NAME" ]]; then
+      ROLE_NAME="$1"
+    else
+      SITE_BUCKET_NAME="$1"
+    fi
+    ;;
+  2)
+    ROLE_NAME="$1"
+    SITE_BUCKET_NAME="$2"
+    ;;
+  3)
+    ROLE_NAME="$1"
+    SITE_BUCKET_NAME="$2"
+    STACK_NAME="$3"
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
+
 if [[ -z "$SITE_BUCKET_NAME" ]]; then
-  echo "Usage: $0 [iam-role-name] <site-bucket-name>" >&2
-  echo "Set SITE_BUCKET_NAME instead of the second argument if preferred." >&2
+  usage
   exit 1
 fi
 
 if [[ ! "$ACCOUNT_ID" =~ ^[0-9]{12}$ ]]; then
   echo "AWS_ACCOUNT_ID must be a 12-digit account ID." >&2
+  exit 1
+fi
+
+if [[ ! "$STACK_NAME" =~ ^[a-zA-Z][a-zA-Z0-9-]*$ ]]; then
+  echo "STACK_NAME must start with a letter and contain only letters, numbers, and hyphens." >&2
   exit 1
 fi
 
@@ -28,13 +64,13 @@ if [[ "$CALLER_ACCOUNT" != "$ACCOUNT_ID" ]]; then
   exit 1
 fi
 
-# The checked-in trust policy is pinned to the known AI Lab account. Render a
-# temporary account-specific copy so the bootstrap cannot target another
-# account while retaining the repository policy as the reviewable source.
+# Render temporary account, bucket, and stack-specific copies while retaining
+# the checked-in policy templates as the reviewable source of truth.
 sed "s/791860731989/$ACCOUNT_ID/g" "$TRUST_POLICY_TEMPLATE" > "$TRUST_POLICY"
 sed \
   -e "s/YOUR_BUCKET_NAME/$SITE_BUCKET_NAME/g" \
   -e "s/ACCOUNT_ID/$ACCOUNT_ID/g" \
+  -e "s/STACK_NAME/$STACK_NAME/g" \
   "$DEPLOY_POLICY_TEMPLATE" > "$DEPLOY_POLICY"
 
 OIDC_PROVIDER_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
@@ -69,4 +105,5 @@ printf 'Configured dedicated AI Lab deployment role.\n'
 printf '  account: %s\n' "$ACCOUNT_ID"
 printf '  role: %s\n' "$ROLE_ARN"
 printf '  bucket policy target: %s\n' "$SITE_BUCKET_NAME"
+printf '  stack policy target: %s\n' "$STACK_NAME"
 printf 'Set GitHub secret AWS_ROLE_TO_ASSUME to the role ARN above, then rerun the AI Lab workflow.\n'
