@@ -22,11 +22,9 @@ case "$#" in
   0)
     ;;
   1)
-    if [[ -n "$SITE_BUCKET_NAME" ]]; then
-      ROLE_NAME="$1"
-    else
-      SITE_BUCKET_NAME="$1"
-    fi
+    # The documented one-argument form is always the bucket. A custom
+    # role can be supplied through ROLE_NAME or the explicit two-argument form.
+    SITE_BUCKET_NAME="$1"
     ;;
   2)
     ROLE_NAME="$1"
@@ -42,7 +40,6 @@ case "$#" in
     exit 1
     ;;
 esac
-
 if [[ -z "$SITE_BUCKET_NAME" ]]; then
   usage
   exit 1
