@@ -3,6 +3,7 @@
 Production source for **SozoRock AI Lab**, a free applied-AI learning program of **The SozoRock Foundation, Inc.**
 
 - Production: <https://ai-lab.sozorockfoundation.org/>
+- Curriculum: <https://ai-lab.sozorockfoundation.org/curriculum/>
 - Foundation: <https://www.sozorockfoundation.org/>
 - Runtime: AWS S3, CloudFront, Route 53, ACM, API Gateway, Lambda, DynamoDB, SES, and CloudWatch
 - Software license: [MIT](LICENSE)
