@@ -103,4 +103,5 @@ printf '  account: %s\n' "$ACCOUNT_ID"
 printf '  role: %s\n' "$ROLE_ARN"
 printf '  bucket policy target: %s\n' "$SITE_BUCKET_NAME"
 printf '  stack policy target: %s\n' "$STACK_NAME"
-printf 'Set GitHub secret AWS_ROLE_TO_ASSUME to the role ARN above, then rerun the AI Lab workflow.\n'
+printf 'GitHub Actions uses the dedicated default role ARN automatically.\n'
+printf 'Set repository variable AWS_ROLE_TO_ASSUME only when intentionally using a different role ARN.\n'
