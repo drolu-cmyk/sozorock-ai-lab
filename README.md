@@ -7,12 +7,13 @@ Production source for **SozoRock AI Lab**, a free applied-AI learning program of
 - Foundation: <https://www.sozorockfoundation.org/>
 - Runtime: AWS S3, CloudFront, Route 53, ACM, API Gateway, Lambda, DynamoDB, SES, and CloudWatch
 - Software license: [MIT](LICENSE)
+- Educational content license: [CC BY 4.0](LICENSE-CONTENT.md)
 
-> The MIT License covers software source. It does not grant rights to SozoRock names, logos, trademarks, participant data, photographs, curriculum, or third-party materials. See [NOTICE.md](NOTICE.md).
+> Code is licensed under MIT. Curriculum, guides, templates, and educational content are licensed under CC BY 4.0 unless noted otherwise. Brand identity, participant information, identifiable photographs and recordings, policy publications, and third-party materials are excluded. See [NOTICE.md](NOTICE.md).
 
 ## Product direction
 
-The site leads with one plain promise: **Use AI for work you already do.** It is editorial and visual rather than a numbered SaaS landing page. It excludes card grids, fake dashboards, invented metrics, unsupported testimonials, fake affiliations, and generic transformation claims.
+The site leads with the approved promise: **Before we automate, we decide.** Its editorial direction uses deep navy, ivory, amber, evergreen, and human-centered imagery. It excludes purple AI gradients, generic tool-first messaging, card grids, fake dashboards, invented metrics, unsupported testimonials, fake affiliations, and generic transformation claims.
 
 ## Structure
 
@@ -119,4 +120,4 @@ Report vulnerabilities through [SECURITY.md](SECURITY.md), `/security/`, or `/.w
 
 CodeQL runs on pull requests, pushes to `main`, and a weekly schedule. The workflow retains SARIF output as a 30-day artifact when repository code-scanning upload is unavailable.
 
-Software is available under the [MIT License](LICENSE). Separate restrictions for identity, content, participant information, and third-party materials are in [NOTICE.md](NOTICE.md).
+Software is available under the [MIT License](LICENSE). Curriculum, guides, templates, and educational content are available under [CC BY 4.0](LICENSE-CONTENT.md), except where noted. Separate restrictions for identity, participant information, identifiable photographs and recordings, policy publications, and third-party materials are in [NOTICE.md](NOTICE.md).
