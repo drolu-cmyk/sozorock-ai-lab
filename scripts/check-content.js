@@ -73,7 +73,7 @@ if (!curriculum.includes('id="learner-resources"') || !curriculum.includes('id="
 const curriculumJs = read('site/curriculum/script.js');
 if (!curriculum.includes('id="availability-filter"') || !curriculum.includes('data-availability=') || !curriculumJs.includes('availabilityFilter')) failures.push('Curriculum availability filter wiring is incomplete.');
 if (!option3Css.includes('.o3-page .o3-button-primary') || !option3Css.includes('color:#fff')) failures.push('Primary homepage CTA contrast override is missing.');
-if (!html.includes('/assets/css/option-3.css?v=20260804-1') || !curriculum.includes('/curriculum/styles.css?v=20260804-1') || !curriculum.includes('/curriculum/script.js?v=20260804-1')) failures.push('Public asset versions are missing.');
+if (!html.includes('/assets/css/option-3.css?v=20260804-1') || !html.includes('/assets/js/main.js?v=20260804-1') || !curriculum.includes('/curriculum/styles.css?v=20260804-1') || !curriculum.includes('/curriculum/script.js?v=20260804-1')) failures.push('Public asset versions are missing.');
 for (const slug of legalPages) {
   const source = read(`site/${slug}/index.html`);
   if (source.includes('This public policy is operational guidance, not legal advice.')) failures.push(`${slug}: internal drafting note is public`);
