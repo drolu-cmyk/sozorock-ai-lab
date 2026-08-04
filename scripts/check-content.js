@@ -59,6 +59,7 @@ if (!html.includes('aria-live="polite"')) failures.push('Accessible form status 
 if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
 if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
 if (!html.includes('id="learning"')) failures.push('Legacy legal-page learning anchor is missing.');
+if (html.includes(String.fromCharCode(92) + 'n    <span id="learning"')) failures.push('Homepage contains an escaped newline before the learning anchor.');
 
 const htmlFiles = [];
 (function walk(dir) {
