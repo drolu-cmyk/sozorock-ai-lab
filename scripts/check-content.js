@@ -9,14 +9,19 @@ const html = read('site/index.html');
 const js = read('site/assets/js/main.js');
 
 const requiredCopy = [
-  'Use AI for work you already do.',
-  'Bring one task. Build a better way to do it.',
-  'Stop starting over.',
-  'Learn through the work.',
-  'AI helps. People decide.',
-  'Bring the Lab to your organization.',
-  'Visit the Foundation website',
-  'Applications are reviewed on a rolling basis.'
+  'Before we automate,',
+  'we decide.',
+  'A practical lab for learning what AI should do, what it should not do, and how to prove the difference.',
+  'The point is not to know every tool.',
+  'It is to make better decisions when the tools change.',
+  'Frame the problem',
+  'Test the risk',
+  'Leave a record',
+  'Choose your starting point',
+  'Learn for yourself',
+  'Equip a team',
+  'Train the trainers',
+  'Visit the Foundation website'
 ];
 for (const text of requiredCopy) if (!html.includes(text)) failures.push(`Homepage missing approved copy: ${text}`);
 
@@ -27,9 +32,10 @@ const forbidden = [
   /unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge/i,
   /SozoRock Health|SozoRock Consulting|SozoRock Technology/i,
   /Day\s+\d+\s+of\s+\d+/i,
-  /\b\d{2,}\+\s+(?:learners|workflows|hours)/i
+  /\b\d{2,}\+\s+(?:learners|workflows|hours)/i,
+  /(?:linear-gradient|radial-gradient|conic-gradient)\(/i
 ];
-for (const pattern of forbidden) if (pattern.test(html)) failures.push(`Homepage contains prohibited or unsupported content: ${pattern}`);
+for (const pattern of forbidden) if (pattern.test(html) || pattern.test(read('site/assets/css/option-3.css'))) failures.push(`Homepage contains prohibited or unsupported content: ${pattern}`);
 
 const legalPages = ['privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
 for (const slug of legalPages) {
@@ -39,9 +45,9 @@ for (const slug of legalPages) {
 }
 
 const assets = [
-  'site/assets/css/styles.css','site/assets/js/main.js','site/assets/img/sozorock-ai-lab-logo.svg',
-  'site/assets/img/hero-participant.svg','site/assets/img/work-before.svg','site/assets/img/work-after.svg','site/favicon.svg',
-  'site/favicon.svg','site/apple-touch-icon.png','site/site.webmanifest','site/404.html'
+  'site/assets/css/styles.css','site/assets/css/option-3.css','site/assets/js/main.js','site/assets/img/sozorock-ai-lab-logo.svg',
+  'site/assets/img/option-3-lab.svg','site/assets/img/option-3-canvas.svg','site/favicon.svg',
+  'site/apple-touch-icon.png','site/site.webmanifest','site/404.html'
 ];
 for (const asset of assets) if (!exists(asset)) failures.push(`Missing required asset: ${asset}`);
 
@@ -76,4 +82,4 @@ if (failures.length) {
   console.error(`Content checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Content checks passed: homepage, ${legalPages.length} policy pages, form, assets, and internal links.`);
+console.log(`Content checks passed: approved homepage, ${legalPages.length} policy pages, form, assets, and internal links.`);

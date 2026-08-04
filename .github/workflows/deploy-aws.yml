@@ -104,7 +104,7 @@ jobs:
           grep -qi '^x-content-type-options: nosniff' <<<"$headers"
           grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
           grep -qi '^permissions-policy:' <<<"$headers"
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Use AI for work you already do.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Before we automate, we decide.' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
