@@ -81,3 +81,17 @@ AWS_CLOUDFRONT_DISTRIBUTION_ID=E1234567890
 ```
 
 The minimum deployment permissions are in `infra/iam/github-actions-deploy-policy.json`.
+
+The deployment role trust policy must match this repository's GitHub OIDC subject. GitHub's immutable subject format uses the repository and owner IDs:
+
+```txt
+repo:drolu-cmyk@271617784/sozorock-ai-lab@1229146928:environment:production
+```
+
+If the workflow reports `Not authorized to perform sts:AssumeRoleWithWebIdentity`, apply the checked-in trust policy to the role named by `AWS_ROLE_TO_ASSUME` before rerunning the deployment:
+
+```bash
+AWS_ACCOUNT_ID=YOUR_ACCOUNT_ID bash scripts/configure-github-oidc-trust.sh YOUR_ROLE_NAME
+```
+
+The script renders the policy for the target account and preserves both legacy and immutable subject forms during the transition.
