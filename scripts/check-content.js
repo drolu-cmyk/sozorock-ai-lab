@@ -7,6 +7,8 @@ const exists = p => fs.existsSync(path.join(root, p));
 const failures = [];
 const html = read('site/index.html');
 const js = read('site/assets/js/main.js');
+const curriculum = read('site/curriculum/index.html');
+const option3Css = read('site/assets/css/option-3.css');
 
 const requiredCopy = [
   'Before we automate,',
@@ -47,7 +49,7 @@ for (const slug of legalPages) {
 const assets = [
   'site/assets/css/styles.css','site/assets/css/option-3.css','site/assets/js/main.js','site/assets/img/sozorock-ai-lab-logo.svg',
   'site/assets/img/option-3-lab.svg','site/assets/img/option-3-canvas.svg','site/favicon.svg',
-  'site/apple-touch-icon.png','site/site.webmanifest','site/404.html'
+  'site/apple-touch-icon.png','site/site.webmanifest','site/404.html','scripts/postprocess-legal.js'
 ];
 for (const asset of assets) if (!exists(asset)) failures.push(`Missing required asset: ${asset}`);
 
@@ -60,6 +62,22 @@ if (!html.includes('Do not submit private customer, patient, student, employee, 
 if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
 if (!html.includes('id="learning"')) failures.push('Legacy legal-page learning anchor is missing.');
 if (html.includes(String.fromCharCode(92) + 'n    <span id="learning"')) failures.push('Homepage contains an escaped newline before the learning anchor.');
+
+const publicFooterLinks = ['/privacy/','/terms/','/cookies/','/acceptable-use/','/responsible-ai/','/accessibility/','/nondiscrimination/','/data-rights/','/security/','/copyright/','/media-consent/','/grievances/'];
+for (const href of publicFooterLinks) {
+  if (!html.includes(`href="${href}"`)) failures.push(`Homepage footer missing ${href}`);
+  if (!curriculum.includes(`href="${href}"`)) failures.push(`Curriculum footer missing ${href}`);
+}
+for (const bad of ['PUBLIC PILOT CURRICULUM','Complete draft','Pilot build']) if (curriculum.includes(bad)) failures.push(`Curriculum exposes internal release language: ${bad}`);
+if (!curriculum.includes('id="learner-resources"') || !curriculum.includes('id="trainer-resources"')) failures.push('Curriculum audience anchors are missing.');
+if (!option3Css.includes('.o3-page .o3-button-primary') || !option3Css.includes('color:#fff')) failures.push('Primary homepage CTA contrast override is missing.');
+for (const slug of legalPages) {
+  const source = read(`site/${slug}/index.html`);
+  if (source.includes('This public policy is operational guidance, not legal advice.')) failures.push(`${slug}: internal drafting note is public`);
+  if (source.includes('SozoRock AI Lab')) failures.push(`${slug}: legacy program identity remains`);
+  if (!source.includes('SozoRock AI Capability Lab')) failures.push(`${slug}: public program identity is missing`);
+  for (const href of publicFooterLinks) if (!source.includes(`href="${href}"`)) failures.push(`${slug}: footer missing ${href}`);
+}
 
 const htmlFiles = [];
 (function walk(dir) {
