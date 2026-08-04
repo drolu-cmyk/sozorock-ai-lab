@@ -70,6 +70,8 @@ for (const href of publicFooterLinks) {
 }
 for (const bad of ['PUBLIC PILOT CURRICULUM','Complete draft','Pilot build']) if (curriculum.includes(bad)) failures.push(`Curriculum exposes internal release language: ${bad}`);
 if (!curriculum.includes('id="learner-resources"') || !curriculum.includes('id="trainer-resources"')) failures.push('Curriculum audience anchors are missing.');
+const curriculumJs = read('site/curriculum/script.js');
+if (!curriculum.includes('id="availability-filter"') || !curriculum.includes('data-availability=') || !curriculumJs.includes('availabilityFilter')) failures.push('Curriculum availability filter wiring is incomplete.');
 if (!option3Css.includes('.o3-page .o3-button-primary') || !option3Css.includes('color:#fff')) failures.push('Primary homepage CTA contrast override is missing.');
 for (const slug of legalPages) {
   const source = read(`site/${slug}/index.html`);
