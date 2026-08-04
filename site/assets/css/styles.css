@@ -173,3 +173,12 @@ button { cursor: pointer; }
   .legal-nav { gap:.8rem; font-size:.78rem; }
   .legal-nav a:last-child { display:none; }
 }
+
+/* Shared public identity and footer */
+.capability-brand{display:inline-flex;flex-direction:column;gap:2px;color:var(--green);font-size:.68rem;font-weight:800;letter-spacing:.16em;line-height:1.2;text-decoration:none}
+.capability-brand span:first-child{font-family:Georgia,"Times New Roman",serif;font-size:1.25rem;letter-spacing:.08em}
+.footer-capability-brand{color:var(--white)}
+.footer-bottom>div{display:grid;gap:.55rem}
+.footer-bottom a{color:inherit;text-underline-offset:3px}
+.footer-bottom a:hover,.footer-bottom a:focus-visible{color:var(--white)}
+@media(max-width:680px){.capability-brand{font-size:.62rem}.capability-brand span:first-child{font-size:1.05rem}}
