@@ -15,7 +15,9 @@
         "StringLike": {
           "token.actions.githubusercontent.com:sub": [
             "repo:drolu-cmyk/sozorock-ai-lab:environment:production",
-            "repo:drolu-cmyk/sozorock-ai-lab:ref:refs/heads/main"
+            "repo:drolu-cmyk/sozorock-ai-lab:ref:refs/heads/main",
+            "repo:drolu-cmyk@271617784/sozorock-ai-lab@1229146928:environment:production",
+            "repo:drolu-cmyk@271617784/sozorock-ai-lab@1229146928:ref:refs/heads/main"
           ]
         }
       }
