@@ -5,3 +5,4 @@ TMP="$ROOT_DIR/scripts/.generate_legal.runtime.py"
 trap 'rm -f "$TMP"' EXIT
 cat "$ROOT_DIR"/scripts/legal-parts/generator.part-* > "$TMP"
 python3 "$TMP"
+node "$ROOT_DIR/scripts/postprocess-legal.js"
