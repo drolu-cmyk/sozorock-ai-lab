@@ -5,6 +5,7 @@ Production source for **SozoRock AI Lab**, a free applied-AI learning program of
 - Production: <https://ai-lab.sozorockfoundation.org/>
 - Curriculum: <https://ai-lab.sozorockfoundation.org/curriculum/>
 - Foundation: <https://www.sozorockfoundation.org/>
+- Copyright holder: **Dr. Oluwabiyi Adeyemo**
 - Runtime: AWS S3, CloudFront, Route 53, ACM, API Gateway, Lambda, DynamoDB, SES, and CloudWatch
 - Software license: [MIT](LICENSE)
 - Educational content license: [CC BY 4.0](LICENSE-CONTENT.md)
