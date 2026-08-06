@@ -93,6 +93,7 @@ const htmlFiles = [];
 for (const file of htmlFiles) {
   const source = fs.readFileSync(file, 'utf8');
   const page = path.relative(path.join(root, 'site'), file);
+  if (source.includes('Educational content is available under')) failures.push(`${page}: repository license copy must not appear in a public footer`);
   const hrefs = [...source.matchAll(/href="(\/[^"?#]*)(?:[?#][^"]*)?"/g)].map(m => m[1]);
   for (const href of new Set(hrefs)) {
     if (href === '/' || href.startsWith('/api/')) continue;
