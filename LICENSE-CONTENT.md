@@ -6,6 +6,6 @@ You may share and adapt that material for any purpose, including commercially, p
 
 Suggested attribution:
 
-> SozoRock AI Capability Lab educational content, The SozoRock Foundation, Inc., licensed under CC BY 4.0. Changes were made.
+> SozoRock AI Capability Lab educational content by Dr. Oluwabiyi Adeyemo, licensed under CC BY 4.0. Changes were made.
 
 This license does not apply to software, trademarks, logos, participant information, photographs or recordings of identifiable people, third-party materials, policy publications, or content marked with another license. Software is licensed separately under the MIT License in `LICENSE`.
