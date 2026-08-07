@@ -102,6 +102,9 @@ jobs:
           organizations="$(curl --retry 8 --retry-delay 8 -fsS "${base}/organizations/")"
           grep -F 'Practical AI skills for work and community life.' <<<"$homepage" >/dev/null
           grep -F 'SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.' <<<"$homepage" >/dev/null
+          grep -F 'Learning in practice' <<<"$homepage" >/dev/null
+          grep -F 'Capital Property Care' <<<"$homepage" >/dev/null
+          grep -F 'Human judgment stays in control.' <<<"$homepage" >/dev/null
           grep -F 'Program results will be published as evidence becomes available.' <<<"$homepage" >/dev/null
           grep -F 'href="/organizations/#inquiry"' <<<"$homepage" >/dev/null
           grep -F 'Core learning areas' <<<"$curriculum" >/dev/null
