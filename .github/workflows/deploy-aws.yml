@@ -82,11 +82,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Deploy infrastructure and site
         run: bash scripts/deploy-aws.sh
-      - name: Production smoke and security-header test
+      - name: Production smoke, CTA, API and security-header test
         run: |
           set -euo pipefail
           base="https://${DOMAIN_NAME}"
-          for path in / /curriculum/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
+          for path in / /curriculum/ /organizations/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
             curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null
           done
           headers="$(curl --retry 8 --retry-delay 8 -fsSI "${base}/")"
@@ -95,15 +95,39 @@ jobs:
           grep -qi '^x-content-type-options: nosniff' <<<"$headers"
           grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
           grep -qi '^permissions-policy:' <<<"$headers"
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Practical AI skills for work and community life.' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Program results will be published as evidence becomes available.' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'Core learning areas' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'The curriculum is tool-neutral.' >/dev/null
-          if curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -Eqi 'Before we automate|AI Capability Lab|Meridian|Day [0-9]+ of [0-9]+'; then
-            echo 'Removed product-style or legacy copy is still present on homepage.'
-            exit 1
-          fi
+
+          homepage="$(curl --retry 8 --retry-delay 8 -fsS "${base}/")"
+          curriculum="$(curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/")"
+          organizations="$(curl --retry 8 --retry-delay 8 -fsS "${base}/organizations/")"
+          grep -F 'Practical AI skills for work and community life.' <<<"$homepage" >/dev/null
+          grep -F 'SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.' <<<"$homepage" >/dev/null
+          grep -F 'Program results will be published as evidence becomes available.' <<<"$homepage" >/dev/null
+          grep -F 'href="/organizations/#inquiry"' <<<"$homepage" >/dev/null
+          grep -F 'Core learning areas' <<<"$curriculum" >/dev/null
+          grep -F 'The curriculum is tool-neutral.' <<<"$curriculum" >/dev/null
+          grep -F 'data-application-type="organization-interest"' <<<"$organizations" >/dev/null
+          grep -F 'Send organization inquiry' <<<"$organizations" >/dev/null
+
+          for source in "$homepage" "$curriculum" "$organizations"; do
+            if grep -Eqi 'href="mailto:|Before we automate|AI Capability Lab|Meridian|Day [0-9]+ of [0-9]+' <<<"$source"; then
+              echo 'Primary program page contains an email CTA or removed legacy/product copy.'
+              exit 1
+            fi
+          done
+
+          api_body="$(mktemp)"
+          api_status="$(curl --retry 4 --retry-delay 2 -sS -o "$api_body" -w '%{http_code}' \
+            -X POST "${base}/api/applications/start" \
+            -H "Origin: ${base}" \
+            -H 'Content-Type: application/json' \
+            --data '{"website":"production-qa-probe"}')"
+          test "$api_status" = '202'
+          grep -F '"ok":true' "$api_body" >/dev/null
+          rm -f "$api_body"
+
+          method_status="$(curl --retry 4 --retry-delay 2 -sS -o /dev/null -w '%{http_code}' "${base}/api/applications/start")"
+          test "$method_status" = '405'
+
           curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null
