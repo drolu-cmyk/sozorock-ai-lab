@@ -18,8 +18,8 @@ for(const file of files){
     if(!name && !/aria-label="[^"]+"/i.test(button[1])) failures.push(`${rel}: unnamed button`);
   }
 }
-const css=fs.readFileSync(path.join(root,'site/assets/css/styles.css'),'utf8');
-for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!css.includes(rule)) failures.push(`styles.css: missing ${rule}`);
+const homepageCss=fs.readFileSync(path.join(root,'site/assets/css/option-3.css'),'utf8');
+for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!homepageCss.includes(rule)) failures.push(`option-3.css: missing ${rule}`);
 const homepage=fs.readFileSync(path.join(root,'site/index.html'),'utf8');
 for(const name of ['firstName','lastName','email','build','consent']){
   const rx=new RegExp(`<label[^>]*>[\\s\\S]*?name="${name}"[\\s\\S]*?<\\/label>`,'i');

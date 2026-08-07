@@ -4,7 +4,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    # Validate every PR update; deploy once from the main branch or manually.
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 permissions:
@@ -18,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.merge_commit_sha || github.sha }}
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
@@ -38,8 +35,6 @@ jobs:
       - name: Production build
         run: npm run build
   deploy:
-    # Pull-request validation remains read-only. Deployment runs once from main
-    # branch pushes or an explicit manual dispatch.
     if: >
       needs.validate.result == 'success' &&
       (
@@ -51,8 +46,6 @@ jobs:
     concurrency:
       group: sozorock-ai-lab-production
       cancel-in-progress: false
-    # Use the main-branch OIDC subject for automated deployment.
-    # This matches the dedicated AI Lab role trust policy.
     env:
       STACK_NAME: ${{ vars.STACK_NAME || 'sozorock-ai-lab' }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -70,8 +63,6 @@ jobs:
       APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.merge_commit_sha || github.sha }}
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
@@ -104,12 +95,15 @@ jobs:
           grep -qi '^x-content-type-options: nosniff' <<<"$headers"
           grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
           grep -qi '^permissions-policy:' <<<"$headers"
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Before we automate, we decide.' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Visit the Foundation website' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'application/ld+json' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'twitter:card' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'SozoRock AI Capability Lab' >/dev/null
-          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'Build AI capability that holds up in real work.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Practical AI skills for work and community life.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -F 'Program results will be published as evidence becomes available.' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'Core learning areas' >/dev/null
+          curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/" | grep -F 'The curriculum is tool-neutral.' >/dev/null
+          if curl --retry 8 --retry-delay 8 -fsS "${base}/" | grep -Eqi 'Before we automate|AI Capability Lab|Meridian|Day [0-9]+ of [0-9]+'; then
+            echo 'Removed product-style or legacy copy is still present on homepage.'
+            exit 1
+          fi
           curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null

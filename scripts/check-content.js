@@ -6,52 +6,53 @@ const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const exists = p => fs.existsSync(path.join(root, p));
 const failures = [];
 const html = read('site/index.html');
-const js = read('site/assets/js/main.js');
 const curriculum = read('site/curriculum/index.html');
-const option3Css = read('site/assets/css/option-3.css');
+const js = read('site/assets/js/main.js');
 
-const requiredCopy = [
-  'Before we automate,',
-  'we decide.',
-  'A practical lab for learning what AI should do, what it should not do, and how to prove the difference.',
-  'The point is not to know every tool.',
-  'It is to make better decisions when the tools change.',
-  'Frame the problem',
-  'Test the risk',
-  'Leave a record',
-  'Choose your starting point',
-  'Learn for yourself',
-  'Equip a team',
-  'Train the trainers',
-  'Visit the Foundation website'
+const requiredHomepageCopy = [
+  'Practical AI skills for work and community life.',
+  'SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.',
+  'We help adults and community organizations learn how to use everyday AI tools safely, critically, and productively.',
+  'No technical background is required.',
+  'Who the Lab serves',
+  'What participants learn',
+  'How training works',
+  'What we measure',
+  'For community organizations',
+  'Program results will be published as evidence becomes available.',
+  'Applications and expressions of interest are reviewed on a rolling basis.'
 ];
-for (const text of requiredCopy) if (!html.includes(text)) failures.push(`Homepage missing approved copy: ${text}`);
+for (const text of requiredHomepageCopy) if (!html.includes(text)) failures.push(`Homepage missing approved copy: ${text}`);
 
-const forbidden = [
-  /class="(?:steps|step|card|cards|metric|metrics|dashboard)\b/i,
-  /Microsoft|Google\.org|OpenAI Academy|AWS for nonprofits|NCR Foundation/i,
-  /guaranteed (?:outcome|funding|placement)|certified|accredited/i,
-  /unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge/i,
-  /SozoRock Health|SozoRock Consulting|SozoRock Technology/i,
+const forbiddenPublicPatterns = [
+  /Before we automate/i,
+  /AI Capability Lab/i,
   /Day\s+\d+\s+of\s+\d+/i,
-  /\b\d{2,}\+\s+(?:learners|workflows|hours)/i,
-  /(?:linear-gradient|radial-gradient|conic-gradient)\(/i
+  /context engineering/i,
+  /context pack/i,
+  /evidence saved/i,
+  /program outcome/i,
+  /capstone defense/i,
+  /\bGRC\b/i,
+  /SozoRock Meridian|Meridian/i,
+  /unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge/i
 ];
-for (const pattern of forbidden) if (pattern.test(html) || pattern.test(read('site/assets/css/option-3.css'))) failures.push(`Homepage contains prohibited or unsupported content: ${pattern}`);
+for (const pattern of forbiddenPublicPatterns) {
+  if (pattern.test(html) || pattern.test(curriculum)) failures.push(`Public program pages contain removed product/AI pattern: ${pattern}`);
+}
 
 const legalPages = ['privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
 for (const slug of legalPages) {
   const file = `site/${slug}/index.html`;
   if (!exists(file)) failures.push(`Missing legal page: ${file}`);
-  else if (read(file).length < 2500) failures.push(`Legal page is unexpectedly thin: ${file}`);
+  else {
+    const source = read(file);
+    if (source.length < 2500) failures.push(`Legal page is unexpectedly thin: ${file}`);
+    if (source.includes('AI Capability Lab')) failures.push(`${slug}: old program identity remains`);
+    if (source.includes('Security or AI incident')) failures.push(`${slug}: old incident language remains`);
+    if (!source.includes('SozoRock AI Lab')) failures.push(`${slug}: AI Lab identity is missing`);
+  }
 }
-
-const assets = [
-  'site/assets/css/styles.css','site/assets/css/option-3.css','site/assets/js/main.js','site/assets/img/sozorock-ai-lab-logo.svg',
-  'site/assets/img/option-3-lab.svg','site/assets/img/option-3-canvas.svg','site/favicon.svg',
-  'site/apple-touch-icon.png','site/site.webmanifest','site/404.html','scripts/postprocess-legal.js'
-];
-for (const asset of assets) if (!exists(asset)) failures.push(`Missing required asset: ${asset}`);
 
 const formFields = ['firstName','lastName','email','region','roleOrOrganization','preferredFormat','technicalExperience','build','sensitiveData','accessNeeds','consent'];
 for (const field of formFields) if (!html.includes(`name="${field}"`)) failures.push(`Missing application field: ${field}`);
@@ -60,27 +61,7 @@ if (!js.includes('formStartedAt')) failures.push('Form timing signal is missing.
 if (!html.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
 if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
 if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
-if (!html.includes('id="learning"')) failures.push('Legacy legal-page learning anchor is missing.');
-if (html.includes(String.fromCharCode(92) + 'n    <span id="learning"')) failures.push('Homepage contains an escaped newline before the learning anchor.');
-
-const publicFooterLinks = ['/privacy/','/terms/','/cookies/','/acceptable-use/','/responsible-ai/','/accessibility/','/nondiscrimination/','/data-rights/','/security/','/copyright/','/media-consent/','/grievances/'];
-for (const href of publicFooterLinks) {
-  if (!html.includes(`href="${href}"`)) failures.push(`Homepage footer missing ${href}`);
-  if (!curriculum.includes(`href="${href}"`)) failures.push(`Curriculum footer missing ${href}`);
-}
-for (const bad of ['PUBLIC PILOT CURRICULUM','Complete draft','Pilot build']) if (curriculum.includes(bad)) failures.push(`Curriculum exposes internal release language: ${bad}`);
-if (!curriculum.includes('id="learner-resources"') || !curriculum.includes('id="trainer-resources"')) failures.push('Curriculum audience anchors are missing.');
-const curriculumJs = read('site/curriculum/script.js');
-if (!curriculum.includes('id="availability-filter"') || !curriculum.includes('data-availability=') || !curriculumJs.includes('availabilityFilter')) failures.push('Curriculum availability filter wiring is incomplete.');
-if (!option3Css.includes('.o3-page .o3-button-primary') || !option3Css.includes('color:#fff')) failures.push('Primary homepage CTA contrast override is missing.');
-if (!html.includes('/assets/css/option-3.css?v=20260804-1') || !html.includes('/assets/js/main.js?v=20260804-1') || !curriculum.includes('/curriculum/styles.css?v=20260804-1') || !curriculum.includes('/curriculum/script.js?v=20260804-1')) failures.push('Public asset versions are missing.');
-for (const slug of legalPages) {
-  const source = read(`site/${slug}/index.html`);
-  if (source.includes('This public policy is operational guidance, not legal advice.')) failures.push(`${slug}: internal drafting note is public`);
-  if (source.includes('SozoRock AI Lab')) failures.push(`${slug}: legacy program identity remains`);
-  if (!source.includes('SozoRock AI Capability Lab')) failures.push(`${slug}: public program identity is missing`);
-  for (const href of publicFooterLinks) if (!source.includes(`href="${href}"`)) failures.push(`${slug}: footer missing ${href}`);
-}
+if (!curriculum.includes('Core learning areas') || !curriculum.includes('For community partners')) failures.push('Curriculum does not match the approved community-training direction.');
 
 const htmlFiles = [];
 (function walk(dir) {
@@ -93,7 +74,8 @@ const htmlFiles = [];
 for (const file of htmlFiles) {
   const source = fs.readFileSync(file, 'utf8');
   const page = path.relative(path.join(root, 'site'), file);
-  if (source.includes('Educational content is available under')) failures.push(`${page}: repository license copy must not appear in a public footer`);
+  if (/SozoRock Meridian|Meridian/i.test(source)) failures.push(`${page}: Meridian reference remains public`);
+  if (source.includes('AI Capability Lab')) failures.push(`${page}: AI Capability Lab reference remains public`);
   const hrefs = [...source.matchAll(/href="(\/[^"?#]*)(?:[?#][^"]*)?"/g)].map(m => m[1]);
   for (const href of new Set(hrefs)) {
     if (href === '/' || href.startsWith('/api/')) continue;
@@ -106,4 +88,4 @@ if (failures.length) {
   console.error(`Content checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Content checks passed: approved homepage, ${legalPages.length} policy pages, form, assets, and internal links.`);
+console.log(`Content checks passed: approved nonprofit homepage, simplified curriculum, ${legalPages.length} policy pages, application form, and internal links.`);
