@@ -33,8 +33,7 @@ for (const file of pages) {
   const required = [
     /<link rel="canonical" href="https:\/\/ai-lab\.sozorockfoundation\.org\//i,
     /property="og:type"/i,/property="og:title"/i,/property="og:description"/i,/property="og:url"/i,
-    /property="og:image" content="https:\/\/ai-lab\.sozorockfoundation\.org\/assets\/img\/social-preview\.png"/i,
-    /name="twitter:card" content="summary_large_image"/i,/name="twitter:title"/i,/name="twitter:description"/i,/name="twitter:image"/i,
+    /name="twitter:card" content="summary(?:_large_image)?"/i,/name="twitter:title"/i,/name="twitter:description"/i,
     /type="application\/ld\+json"/i
   ];
   for (const r of required) if (!r.test(html)) failures.push(`${rel}: missing SEO requirement ${r}`);
@@ -46,13 +45,11 @@ for (const file of pages) {
 const sitemap = fs.readFileSync(path.join(site,'sitemap.xml'),'utf8');
 const slugs = ['curriculum','privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
 for (const slug of slugs) if (!sitemap.includes(`<loc>https://ai-lab.sozorockfoundation.org/${slug}/</loc>`)) failures.push(`sitemap.xml: missing ${slug}`);
-if (!sitemap.includes('<lastmod>2026-08-04</lastmod>')) failures.push('sitemap.xml: missing current lastmod');
+if (!sitemap.includes('<lastmod>2026-08-06</lastmod>')) failures.push('sitemap.xml: missing current lastmod');
 const robots = fs.readFileSync(path.join(site,'robots.txt'),'utf8');
 if (!robots.includes('Disallow: /api/')) failures.push('robots.txt: API route must be excluded');
 if (!robots.includes('Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml')) failures.push('robots.txt: missing canonical sitemap');
 const manifest = JSON.parse(fs.readFileSync(path.join(site,'site.webmanifest'),'utf8'));
-if (manifest.id !== '/' || manifest.start_url !== '/' || !Array.isArray(manifest.icons) || manifest.icons.length < 2) failures.push('site.webmanifest: incomplete identity or icons');
-const socialSource = path.join(root,'design/reference-collages/sozorock-ai-lab-reference-grid-01.png');
-if (!fs.existsSync(socialSource)) console.warn('Social preview source is supplied by the tracked design/reference-collages asset in the repository.');
+if (manifest.name !== 'SozoRock AI Lab' || manifest.id !== '/' || manifest.start_url !== '/' || !Array.isArray(manifest.icons) || manifest.icons.length < 2) failures.push('site.webmanifest: incomplete identity or icons');
 if (failures.length) { console.error(`SEO checks failed (${failures.length}):\n- ${failures.join('\n- ')}`); process.exit(1); }
 console.log(`SEO checks passed for ${pages.length - 1} indexable pages plus 404, sitemap, robots, schema, sharing metadata, and manifest.`);

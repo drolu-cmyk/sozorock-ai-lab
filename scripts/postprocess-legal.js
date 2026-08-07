@@ -3,19 +3,26 @@ const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const slugs = ['privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
-const header = "<header class=\"site-header\"><div class=\"header-inner\"><a class=\"capability-brand\" href=\"/\" aria-label=\"SozoRock AI Capability Lab home\"><span>SOZOROCK</span><span>AI CAPABILITY LAB</span></a><nav class=\"legal-nav\" aria-label=\"Primary navigation\"><a href=\"/\">Home</a><a href=\"/curriculum/\">Curriculum</a><a href=\"/#apply\">Apply</a><a href=\"https://www.sozorockfoundation.org/\" rel=\"noopener\">Foundation</a></nav></div></header>";
-const footer = "<footer class=\"site-footer\"><div class=\"footer-grid\"><div class=\"footer-brand\"><a class=\"capability-brand footer-capability-brand\" href=\"/\" aria-label=\"SozoRock AI Capability Lab home\"><span>SOZOROCK</span><span>AI CAPABILITY LAB</span></a><p>A free learning program of The SozoRock Foundation, Inc., a 501(c)(3) nonprofit organization based in Albany, New York.</p><p><a href=\"https://www.sozorockfoundation.org/\" rel=\"noopener\">Visit the Foundation website</a></p></div><nav class=\"footer-col\" aria-label=\"Explore\"><h2>Explore</h2><a href=\"/#practice\">The lab</a><a href=\"/curriculum/\">Curriculum</a><a href=\"/#apply\">Apply</a><a href=\"/curriculum/#learner-resources\">For learners</a><a href=\"/curriculum/#trainer-resources\">For trainers</a><a href=\"mailto:contact@sozorockfoundation.org?subject=AI%20Capability%20Lab%20organization%20inquiry\">For organizations</a></nav><nav class=\"footer-col\" aria-label=\"Legal\"><h2>Legal</h2><a href=\"/privacy/\">Privacy</a><a href=\"/terms/\">Terms</a><a href=\"/cookies/\">Cookies</a><a href=\"/acceptable-use/\">Acceptable use</a><a href=\"/responsible-ai/\">Responsible AI</a></nav><nav class=\"footer-col\" aria-label=\"Access and rights\"><h2>Access &amp; rights</h2><a href=\"/accessibility/\">Accessibility</a><a href=\"/nondiscrimination/\">Nondiscrimination</a><a href=\"/data-rights/\">Data rights</a><a href=\"/media-consent/\">Media consent</a></nav><nav class=\"footer-col\" aria-label=\"Report or contact\"><h2>Report or contact</h2><a href=\"/security/\">Security or AI incident</a><a href=\"/grievances/\">Complaint or grievance</a><a href=\"/copyright/\">Copyright</a><a href=\"mailto:contact@sozorockfoundation.org\">Contact</a></nav></div><div class=\"footer-bottom\"><p>© 2026 The SozoRock Foundation, Inc. All rights reserved.</p><div><p>SozoRock AI Capability Lab is an independent program of The SozoRock Foundation and is not sponsored by or affiliated with OpenAI.</p></div></div></footer>";
+
+const header = '<header class="site-header"><div class="header-inner"><a class="capability-brand" href="/" aria-label="SozoRock AI Lab home"><span>SOZOROCK</span><span>AI LAB</span></a><nav class="legal-nav" aria-label="Primary navigation"><a href="/">Home</a><a href="/curriculum/">Curriculum</a><a href="/#apply">Apply</a><a href="https://www.sozorockfoundation.org/" rel="noopener">Foundation</a></nav></div></header>';
+const footer = '<footer class="site-footer"><div class="footer-grid"><div class="footer-brand"><a class="capability-brand footer-capability-brand" href="/" aria-label="SozoRock AI Lab home"><span>SOZOROCK</span><span>AI LAB</span></a><p>A no-cost education program of The SozoRock Foundation, Inc., a nonprofit, tax-exempt charitable organization.</p><p><a href="https://www.sozorockfoundation.org/" rel="noopener">Visit the Foundation website</a></p></div><nav class="footer-col" aria-label="Program"><h2>Program</h2><a href="/">AI Lab</a><a href="/curriculum/">Curriculum</a><a href="/#apply">Apply</a><a href="mailto:contact@sozorockfoundation.org?subject=SozoRock%20AI%20Lab%20organization%20inquiry">For organizations</a></nav><nav class="footer-col" aria-label="Policies"><h2>Policies</h2><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/accessibility/">Accessibility</a><a href="/nondiscrimination/">Nondiscrimination</a><a href="/data-rights/">Data rights</a></nav><nav class="footer-col" aria-label="Contact"><h2>Contact</h2><a href="/security/">Privacy or security concern</a><a href="/grievances/">Complaint or grievance</a><a href="/copyright/">Copyright</a><a href="mailto:contact@sozorockfoundation.org">Contact</a></nav></div><div class="footer-bottom"><p>© 2026 The SozoRock Foundation, Inc. All rights reserved.</p></div></footer>';
 const internalNote = '<p class="legal-note">This public policy is operational guidance, not legal advice. The Foundation may revise it after legal, security, accessibility, or program review.</p>';
+
 for (const slug of slugs) {
   const file = path.join(root, 'site', slug, 'index.html');
   let source = fs.readFileSync(file, 'utf8');
   source = source.replace(/<header class="site-header">[\s\S]*?<\/header>/, header);
   source = source.replace(/<footer class="site-footer">[\s\S]*?<\/footer>/, footer);
   source = source.replace(internalNote, '');
-  source = source.replaceAll('SozoRock AI Lab', 'SozoRock AI Capability Lab');
-  source = source.replaceAll('href="/assets/css/styles.css"', 'href="/assets/css/styles.css?v=20260804-1"');
-  source = source.replaceAll('July 15, 2026', 'August 4, 2026');
-  source = source.replaceAll('2026-07-15', '2026-08-04');
-  source = source.replace(/<title>([^<]+) \| SozoRock AI Capability Lab<\/title>/, '<title>$1 | SozoRock</title>');
+  source = source.replaceAll('SozoRock AI Capability Lab', 'SozoRock AI Lab');
+  source = source.replaceAll('AI Capability Lab', 'AI Lab');
+  source = source.replaceAll('Security or AI incident', 'Privacy or security concern');
+  source = source.replaceAll('Report an AI or security incident', 'Report a privacy or security concern');
+  source = source.replaceAll('WCAG 2.2 AA', 'WCAG 2.1 AA');
+  source = source.replaceAll('href="/assets/css/styles.css"', 'href="/assets/css/styles.css?v=20260806-1"');
+  source = source.replaceAll('August 4, 2026', 'August 6, 2026');
+  source = source.replaceAll('2026-08-04', '2026-08-06');
+  source = source.replace(/<title>([^<]+) \| SozoRock AI Lab<\/title>/, '<title>$1 | SozoRock AI Lab</title>');
+  source = source.replace(/SozoRock AI Lab is an independent program of The SozoRock Foundation[^<]*OpenAI[^<]*\.?/gi, 'SozoRock AI Lab is a program of The SozoRock Foundation, Inc.');
   fs.writeFileSync(file, source);
 }
