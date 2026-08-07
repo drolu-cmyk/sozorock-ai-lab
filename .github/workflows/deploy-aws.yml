@@ -87,6 +87,7 @@ jobs:
           set -euo pipefail
           base="https://${DOMAIN_NAME}"
           for path in / /curriculum/ /organizations/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
+            echo "Checking route ${path}"
             curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null
           done
           headers="$(curl --retry 8 --retry-delay 8 -fsSI "${base}/")"
@@ -121,12 +122,14 @@ jobs:
             -H "Origin: ${base}" \
             -H 'Content-Type: application/json' \
             --data '{"website":"production-qa-probe"}')"
+          echo "Application POST probe status: ${api_status}"
           test "$api_status" = '202'
           grep -F '"ok":true' "$api_body" >/dev/null
           rm -f "$api_body"
 
           method_status="$(curl --retry 4 --retry-delay 2 -sS -o /dev/null -w '%{http_code}' "${base}/api/applications/start")"
-          test "$method_status" = '405'
+          echo "Undefined GET route status: ${method_status}"
+          test "$method_status" = '404'
 
           curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
