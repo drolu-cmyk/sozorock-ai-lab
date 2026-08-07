@@ -74,10 +74,14 @@
             const lastName = text(body.lastName, 80);
             const email = text(body.email, 254).toLowerCase();
             const build = text(body.build, 2000);
+            const roleOrOrganization = text(body.roleOrOrganization, 160);
             const requestedType = text(body.applicationType, 80);
             const applicationType = ['participant-interest', 'organization-interest'].includes(requestedType) ? requestedType : 'participant-interest';
             if (!firstName || !lastName || !validEmail(email) || build.length < 20 || body.consent !== true) {
               return response({ error: 'Missing or invalid required fields.' }, 400, requestId);
+            }
+            if (applicationType === 'organization-interest' && !roleOrOrganization) {
+              return response({ error: 'Organization is required.' }, 400, requestId);
             }
             const id = `ailab-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`;
             const submittedAt = new Date().toISOString();
@@ -97,7 +101,7 @@
               ttl: { N: String(ttl) }
             };
             optionalString(item, 'region', body.region, 120);
-            optionalString(item, 'roleOrOrganization', body.roleOrOrganization, 160);
+            optionalString(item, 'roleOrOrganization', roleOrOrganization, 160);
             optionalString(item, 'preferredFormat', body.preferredFormat, 60);
             optionalString(item, 'technicalExperience', body.technicalExperience, 100);
             optionalString(item, 'organizationType', body.organizationType, 100);
@@ -114,7 +118,7 @@
             let internalSent = false;
             if (validEmail(process.env.INTERNAL_EMAIL || '')) {
               const internalSubject = isOrganization ? 'New SozoRock AI Lab organization inquiry' : 'New SozoRock AI Lab participant interest submission';
-              internalSent = await sendEmail(process.env.INTERNAL_EMAIL, internalSubject, `Submission ID: ${id}\nType: ${applicationType}\nName: ${firstName} ${lastName}\nEmail: ${email}\nRegion: ${text(body.region, 120)}\nRole or organization: ${text(body.roleOrOrganization, 160)}\nOrganization type: ${text(body.organizationType, 100)}\nAudience: ${text(body.audience, 1000)}\nSensitive data indicated: ${text(body.sensitiveData, 40)}\n\nInquiry:\n${build}`);
+              internalSent = await sendEmail(process.env.INTERNAL_EMAIL, internalSubject, `Submission ID: ${id}\nType: ${applicationType}\nName: ${firstName} ${lastName}\nEmail: ${email}\nRegion: ${text(body.region, 120)}\nRole or organization: ${roleOrOrganization}\nOrganization type: ${text(body.organizationType, 100)}\nAudience: ${text(body.audience, 1000)}\nSensitive data indicated: ${text(body.sensitiveData, 40)}\n\nInquiry:\n${build}`);
             }
             return response({ ok: true, id, type: applicationType, email: { applicant: applicantSent, internal: internalSent } }, 201, requestId);
           }
