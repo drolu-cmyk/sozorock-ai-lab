@@ -16,7 +16,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
@@ -62,7 +62,7 @@ jobs:
       APPLICATION_RATE_LIMIT: ${{ vars.APPLICATION_RATE_LIMIT || '5' }}
       APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
