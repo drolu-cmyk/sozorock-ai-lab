@@ -16,9 +16,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: npm}
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Generate policy pages
         run: npm run generate:legal
@@ -62,9 +62,9 @@ jobs:
       APPLICATION_RATE_LIMIT: ${{ vars.APPLICATION_RATE_LIMIT || '5' }}
       APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: npm}
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Validate core deployment configuration
         run: |
@@ -75,7 +75,7 @@ jobs:
           printf '{"commit":"%s","run_id":"%s","deployed_at":"%s"}\n' \
             "$GITHUB_SHA" "$GITHUB_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > site/deployment.json
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           role-session-name: SozoRockAiLab-${{ github.run_id }}
