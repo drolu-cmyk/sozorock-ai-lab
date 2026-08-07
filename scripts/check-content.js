@@ -16,6 +16,11 @@ const requiredHomepageCopy = [
   'We help adults and community organizations learn how to use everyday AI tools safely, critically, and productively.',
   'No technical background is required.',
   'Who the Lab serves',
+  'Learning in practice',
+  'Edward Jones',
+  'Capital Property Care',
+  'Human judgment stays in control.',
+  'Participant story and media shared with consent.',
   'What participants learn',
   'How training works',
   'What we measure',
@@ -73,6 +78,7 @@ if (js.includes('email contact@sozorockfoundation.org')) failures.push('Form fai
 if (!html.includes('aria-live="polite"') || !organizations.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
 if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
 if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
+if (!html.includes('href="https://www.capitalpropertycare.com/"')) failures.push('Participant project link is missing from the homepage.');
 if (!curriculum.includes('Core learning areas') || !curriculum.includes('For community partners')) failures.push('Curriculum does not match the approved community-training direction.');
 if (!html.includes('href="/organizations/#inquiry"') || !curriculum.includes('href="/organizations/#inquiry"')) failures.push('Primary organization CTAs do not route to the on-site inquiry flow.');
 if (!html.includes('/assets/css/option-3.css?v=20260807-2') || !html.includes('/assets/js/main.js?v=20260807-2') || !organizations.includes('/assets/js/main.js?v=20260807-2')) failures.push('Current public asset versions are missing.');
@@ -102,4 +108,4 @@ if (failures.length) {
   console.error(`Content checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Content checks passed: nonprofit homepage, visual program structure, curriculum, organization inquiry, ${legalPages.length} policy pages, forms, CTA destinations, and internal links.`);
+console.log(`Content checks passed: nonprofit homepage, participant evidence, visual program structure, curriculum, organization inquiry, ${legalPages.length} policy pages, forms, CTA destinations, and internal links.`);
