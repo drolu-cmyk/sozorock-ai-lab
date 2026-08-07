@@ -26,6 +26,123 @@
   <meta name="twitter:title" content="Practical AI skills for work and community life.">
   <meta name="twitter:description" content="Free, practical AI education from The SozoRock Foundation for adults and community organizations.">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"NGO","@id":"https://www.sozorockfoundation.org/#organization","name":"The SozoRock Foundation, Inc.","url":"https://www.sozorockfoundation.org/","email":"contact@sozorockfoundation.org","address":{"@type":"PostalAddress","addressLocality":"Albany","addressRegion":"NY","addressCountry":"US"},"sameAs":["https://x.com/srockfoundation"]},{"@type":"WebSite","@id":"https://ai-lab.sozorockfoundation.org/#website","url":"https://ai-lab.sozorockfoundation.org/","name":"SozoRock AI Lab","publisher":{"@id":"https://www.sozorockfoundation.org/#organization"},"inLanguage":"en-US"},{"@type":"EducationalOccupationalProgram","@id":"https://ai-lab.sozorockfoundation.org/#program","name":"SozoRock AI Lab","description":"A no-cost education program that helps adults and community organizations learn how to use everyday AI tools safely, critically, and productively.","url":"https://ai-lab.sozorockfoundation.org/","provider":{"@id":"https://www.sozorockfoundation.org/#organization"},"educationalProgramMode":["In person","Online","Hybrid"],"isAccessibleForFree":true}]}</script>
+  <style>
+    .evidence-section { background: var(--white); }
+    .evidence-lead {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+      gap: 76px;
+      align-items: start;
+    }
+    .evidence-project {
+      padding: 30px 0 26px;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--line);
+    }
+    .evidence-project > span {
+      display: block;
+      margin-bottom: 28px;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .evidence-project strong {
+      display: block;
+      font-size: clamp(1.7rem, 3vw, 2.5rem);
+      line-height: 1.05;
+      letter-spacing: -.035em;
+    }
+    .evidence-project p { margin: 10px 0 22px; color: var(--muted); }
+    .evidence-project a { font-weight: 750; }
+    .evidence-journey { margin-top: 56px; }
+    .evidence-journey ol {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid var(--accent-dark);
+    }
+    .evidence-journey li {
+      position: relative;
+      min-height: 154px;
+      padding: 28px 20px 22px 0;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+    .evidence-journey li + li { padding-left: 20px; }
+    .evidence-journey li:last-child { border-right: 0; }
+    .evidence-journey li::before {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      top: -5px;
+      left: 0;
+      border-radius: 50%;
+      background: var(--accent-dark);
+    }
+    .evidence-journey li + li::before { left: 20px; }
+    .evidence-journey span {
+      display: block;
+      margin-bottom: 28px;
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+    .evidence-journey strong { display: block; font-size: 1.12rem; }
+    .evidence-journey small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .evidence-note {
+      display: grid;
+      grid-template-columns: minmax(240px, .72fr) minmax(0, 1.28fr);
+      gap: 76px;
+      margin-top: 48px;
+      padding: 30px 0 0;
+      border-top: 1px solid var(--ink);
+    }
+    .evidence-note strong {
+      font-size: clamp(1.45rem, 2.6vw, 2rem);
+      line-height: 1.15;
+      letter-spacing: -.025em;
+    }
+    .evidence-note p { max-width: 720px; margin: 0 0 12px; color: var(--muted); }
+    .evidence-note .consent-note { font-size: 13px; }
+    @media (max-width: 900px) {
+      .evidence-lead,
+      .evidence-note { grid-template-columns: 1fr; gap: 30px; }
+      .evidence-journey ol { grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 0; }
+      .evidence-journey li,
+      .evidence-journey li + li { padding: 24px 18px 22px 0; border-top: 1px solid var(--accent-dark); }
+      .evidence-journey li:nth-child(3n+2),
+      .evidence-journey li:nth-child(3n+3) { padding-left: 18px; }
+      .evidence-journey li::before,
+      .evidence-journey li + li::before { left: 0; }
+      .evidence-journey li:nth-child(3n+2)::before,
+      .evidence-journey li:nth-child(3n+3)::before { left: 18px; }
+    }
+    @media (max-width: 560px) {
+      .evidence-journey { margin-top: 42px; }
+      .evidence-journey ol { grid-template-columns: 1fr; }
+      .evidence-journey li,
+      .evidence-journey li + li,
+      .evidence-journey li:nth-child(3n+2),
+      .evidence-journey li:nth-child(3n+3) { min-height: auto; padding: 22px 0; border-right: 0; }
+      .evidence-journey li::before,
+      .evidence-journey li + li::before,
+      .evidence-journey li:nth-child(3n+2)::before,
+      .evidence-journey li:nth-child(3n+3)::before { left: 0; }
+      .evidence-journey span { margin-bottom: 12px; }
+    }
+  </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -87,6 +204,41 @@
         <li><span>03</span><strong>Adult learners</strong></li>
         <li><span>04</span><strong>Local organizations</strong></li>
       </ol>
+    </div>
+  </section>
+
+  <section class="section evidence-section" id="practice" aria-labelledby="practice-title">
+    <div class="shell evidence-lead">
+      <div>
+        <h2 id="practice-title">Learning in practice</h2>
+        <div class="section-copy intro-copy">
+          <p>Edward Jones brought a real business need to the AI Lab: build and deploy a website for his interior painting business, Capital Property Care.</p>
+          <p>The work moved from learning how to direct AI tools, to building and reviewing the site, to deployment with attention to security and human judgment.</p>
+        </div>
+      </div>
+      <aside class="evidence-project" aria-label="Participant project">
+        <span>Participant project</span>
+        <strong>Capital Property Care</strong>
+        <p>Interior painting business</p>
+        <a href="https://www.capitalpropertycare.com/" rel="noopener noreferrer">capitalpropertycare.com</a>
+      </aside>
+    </div>
+    <div class="shell evidence-journey" aria-label="Participant learning and deployment journey">
+      <ol>
+        <li><span>01</span><strong>Learn</strong><small>understand the tool and the business task</small></li>
+        <li><span>02</span><strong>Build</strong><small>turn a real need into working website components</small></li>
+        <li><span>03</span><strong>Review</strong><small>inspect output instead of accepting it automatically</small></li>
+        <li><span>04</span><strong>Secure</strong><small>handle integrations and deployment with appropriate safeguards</small></li>
+        <li><span>05</span><strong>Deploy</strong><small>move the reviewed work into a live environment</small></li>
+        <li><span>06</span><strong>Human judgment</strong><small>stays in control of what goes live</small></li>
+      </ol>
+    </div>
+    <div class="shell evidence-note">
+      <strong>Human judgment stays in control.</strong>
+      <div>
+        <p>AI can help plan, draft, troubleshoot, and accelerate work. The participant still reviews what is built, decides what is appropriate, and remains responsible for what goes live.</p>
+        <p class="consent-note">Participant story and media shared with consent.</p>
+      </div>
     </div>
   </section>
 
