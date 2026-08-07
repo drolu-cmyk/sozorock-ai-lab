@@ -74,6 +74,8 @@
             const lastName = text(body.lastName, 80);
             const email = text(body.email, 254).toLowerCase();
             const build = text(body.build, 2000);
+            const requestedType = text(body.applicationType, 80);
+            const applicationType = ['participant-interest', 'organization-interest'].includes(requestedType) ? requestedType : 'participant-interest';
             if (!firstName || !lastName || !validEmail(email) || build.length < 20 || body.consent !== true) {
               return response({ error: 'Missing or invalid required fields.' }, 400, requestId);
             }
@@ -82,7 +84,7 @@
             const ttl = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 2;
             const item = {
               id: { S: id },
-              type: { S: 'interest_start' },
+              type: { S: applicationType.replace('-', '_') },
               status: { S: 'submitted' },
               firstName: { S: firstName },
               lastName: { S: lastName },
@@ -98,15 +100,23 @@
             optionalString(item, 'roleOrOrganization', body.roleOrOrganization, 160);
             optionalString(item, 'preferredFormat', body.preferredFormat, 60);
             optionalString(item, 'technicalExperience', body.technicalExperience, 100);
+            optionalString(item, 'organizationType', body.organizationType, 100);
+            optionalString(item, 'audience', body.audience, 1000);
             optionalString(item, 'sensitiveData', body.sensitiveData, 40);
             optionalString(item, 'accessNeeds', body.accessNeeds, 1000);
             await ddb.send(new PutItemCommand({ TableName: process.env.TABLE_NAME, Item: item, ConditionExpression: 'attribute_not_exists(id)' }));
-            const applicantSent = await sendEmail(email, 'We received your SozoRock AI Lab interest form', `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. If there is a suitable cohort, we will send the schedule and next steps by email.\n\nDo not send confidential information by reply.\n\nThe SozoRock Foundation, Inc.`);
+            const isOrganization = applicationType === 'organization-interest';
+            const applicantSubject = isOrganization ? 'We received your SozoRock AI Lab organization inquiry' : 'We received your SozoRock AI Lab interest form';
+            const applicantBody = isOrganization
+              ? `Hi ${firstName},\n\nThank you for contacting SozoRock AI Lab. We received your organization inquiry and will review the most relevant next step.\n\nDo not send confidential information by reply.\n\nThe SozoRock Foundation, Inc.`
+              : `Hi ${firstName},\n\nThank you for your interest in SozoRock AI Lab. We received your submission. If there is a suitable cohort, we will send the schedule and next steps by email.\n\nDo not send confidential information by reply.\n\nThe SozoRock Foundation, Inc.`;
+            const applicantSent = await sendEmail(email, applicantSubject, applicantBody);
             let internalSent = false;
             if (validEmail(process.env.INTERNAL_EMAIL || '')) {
-              internalSent = await sendEmail(process.env.INTERNAL_EMAIL, 'New SozoRock AI Lab interest submission', `Submission ID: ${id}\nName: ${firstName} ${lastName}\nEmail: ${email}\nRegion: ${text(body.region, 120)}\nRole or organization: ${text(body.roleOrOrganization, 160)}\nSensitive data indicated: ${text(body.sensitiveData, 40)}\n\nWork to improve:\n${build}`);
+              const internalSubject = isOrganization ? 'New SozoRock AI Lab organization inquiry' : 'New SozoRock AI Lab participant interest submission';
+              internalSent = await sendEmail(process.env.INTERNAL_EMAIL, internalSubject, `Submission ID: ${id}\nType: ${applicationType}\nName: ${firstName} ${lastName}\nEmail: ${email}\nRegion: ${text(body.region, 120)}\nRole or organization: ${text(body.roleOrOrganization, 160)}\nOrganization type: ${text(body.organizationType, 100)}\nAudience: ${text(body.audience, 1000)}\nSensitive data indicated: ${text(body.sensitiveData, 40)}\n\nInquiry:\n${build}`);
             }
-            return response({ ok: true, id, email: { applicant: applicantSent, internal: internalSent } }, 201, requestId);
+            return response({ ok: true, id, type: applicationType, email: { applicant: applicantSent, internal: internalSent } }, 201, requestId);
           }
           async function handleSelected(event, body, requestId) {
             const email = text(body.email, 254).toLowerCase();
