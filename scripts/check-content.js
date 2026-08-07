@@ -7,6 +7,7 @@ const exists = p => fs.existsSync(path.join(root, p));
 const failures = [];
 const html = read('site/index.html');
 const curriculum = read('site/curriculum/index.html');
+const organizations = read('site/organizations/index.html');
 const js = read('site/assets/js/main.js');
 
 const requiredHomepageCopy = [
@@ -38,7 +39,11 @@ const forbiddenPublicPatterns = [
   /unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge/i
 ];
 for (const pattern of forbiddenPublicPatterns) {
-  if (pattern.test(html) || pattern.test(curriculum)) failures.push(`Public program pages contain removed product/AI pattern: ${pattern}`);
+  if (pattern.test(html) || pattern.test(curriculum) || pattern.test(organizations)) failures.push(`Public program pages contain removed product/AI pattern: ${pattern}`);
+}
+
+for (const [name, source] of [['homepage', html], ['curriculum', curriculum], ['organizations', organizations]]) {
+  if (/href="mailto:/i.test(source)) failures.push(`${name}: email-based link remains on a primary program page`);
 }
 
 const legalPages = ['privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
@@ -51,17 +56,26 @@ for (const slug of legalPages) {
     if (source.includes('AI Capability Lab')) failures.push(`${slug}: old program identity remains`);
     if (source.includes('Security or AI incident')) failures.push(`${slug}: old incident language remains`);
     if (!source.includes('SozoRock AI Lab')) failures.push(`${slug}: AI Lab identity is missing`);
+    if (!source.includes('href="/organizations/"')) failures.push(`${slug}: on-site organization route is missing from generated navigation`);
   }
 }
 
-const formFields = ['firstName','lastName','email','region','roleOrOrganization','preferredFormat','technicalExperience','build','sensitiveData','accessNeeds','consent'];
-for (const field of formFields) if (!html.includes(`name="${field}"`)) failures.push(`Missing application field: ${field}`);
+const participantFields = ['firstName','lastName','email','region','roleOrOrganization','preferredFormat','technicalExperience','build','sensitiveData','accessNeeds','consent'];
+for (const field of participantFields) if (!html.includes(`name="${field}"`)) failures.push(`Missing participant application field: ${field}`);
+const organizationFields = ['firstName','lastName','email','roleOrOrganization','region','preferredFormat','organizationType','build','audience','accessNeeds','consent'];
+for (const field of organizationFields) if (!organizations.includes(`name="${field}"`)) failures.push(`Missing organization inquiry field: ${field}`);
+if (!html.includes('data-application-type="participant-interest"')) failures.push('Homepage form is missing participant application type.');
+if (!organizations.includes('data-application-type="organization-interest"')) failures.push('Organization form is missing organization application type.');
 if (!js.includes("fetch('/api/applications/start'")) failures.push('Application endpoint is missing from main.js.');
 if (!js.includes('formStartedAt')) failures.push('Form timing signal is missing.');
-if (!html.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
+if (!js.includes('applicationType')) failures.push('Application type is not sent by main.js.');
+if (js.includes('email contact@sozorockfoundation.org')) failures.push('Form failure state still tells users to email instead of recovering on site.');
+if (!html.includes('aria-live="polite"') || !organizations.includes('aria-live="polite"')) failures.push('Accessible form status region is missing.');
 if (!html.includes('Do not submit private customer, patient, student, employee, financial, legal, or account information.')) failures.push('Sensitive-information warning is missing.');
 if (!html.includes('https://www.sozorockfoundation.org/')) failures.push('Foundation website link is missing.');
 if (!curriculum.includes('Core learning areas') || !curriculum.includes('For community partners')) failures.push('Curriculum does not match the approved community-training direction.');
+if (!html.includes('href="/organizations/#inquiry"') || !curriculum.includes('href="/organizations/#inquiry"')) failures.push('Primary organization CTAs do not route to the on-site inquiry flow.');
+if (!html.includes('/assets/css/option-3.css?v=20260807-2') || !html.includes('/assets/js/main.js?v=20260807-2') || !organizations.includes('/assets/js/main.js?v=20260807-2')) failures.push('Current public asset versions are missing.');
 
 const htmlFiles = [];
 (function walk(dir) {
@@ -88,4 +102,4 @@ if (failures.length) {
   console.error(`Content checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Content checks passed: approved nonprofit homepage, simplified curriculum, ${legalPages.length} policy pages, application form, and internal links.`);
+console.log(`Content checks passed: nonprofit homepage, visual program structure, curriculum, organization inquiry, ${legalPages.length} policy pages, forms, CTA destinations, and internal links.`);
