@@ -17,13 +17,21 @@ for(const file of files){
     const name=button[2].replace(/<[^>]+>/g,'').trim();
     if(!name && !/aria-label="[^"]+"/i.test(button[1])) failures.push(`${rel}: unnamed button`);
   }
+  for(const anchor of html.matchAll(/<a\b([^>]*)>/gi)){
+    const attrs=anchor[1];
+    if(/target="_blank"/i.test(attrs) && !/rel="[^"]*noopener[^"]*"/i.test(attrs)) failures.push(`${rel}: target=_blank link missing noopener`);
+  }
+  if(/role="img"[^>]*>[\s\S]*?<a\b/i.test(html)) failures.push(`${rel}: interactive link nested inside role=img`);
 }
-const homepageCss=fs.readFileSync(path.join(root,'site/assets/css/option-3.css'),'utf8');
-for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!homepageCss.includes(rule)) failures.push(`option-3.css: missing ${rule}`);
+const baseCss=fs.readFileSync(path.join(root,'site/assets/css/option-3.css'),'utf8');
+for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!baseCss.includes(rule)) failures.push(`option-3.css: missing ${rule}`);
+const campaignCss=fs.readFileSync(path.join(root,'site/assets/css/campaign.css'),'utf8');
+for(const rule of ['min-height: 44px','scroll-margin-top','@media (max-width: 720px)']) if(!campaignCss.includes(rule)) failures.push(`campaign.css: missing ${rule}`);
 const homepage=fs.readFileSync(path.join(root,'site/index.html'),'utf8');
 for(const name of ['firstName','lastName','email','build','consent']){
   const rx=new RegExp(`<label[^>]*>[\\s\\S]*?name="${name}"[\\s\\S]*?<\\/label>`,'i');
   if(!rx.test(homepage)) failures.push(`homepage: ${name} is not wrapped by a label`);
 }
+if(!homepage.includes('aria-hidden="true"')) failures.push('homepage: decorative participant image should be hidden from assistive technology.');
 if(failures.length){console.error(`Accessibility checks failed (${failures.length}):\n- ${failures.join('\n- ')}`);process.exit(1);}
-console.log(`Accessibility checks passed for ${files.length} pages and the application form.`);
+console.log(`Accessibility checks passed for ${files.length} pages, campaign target sizing, external-link safety, and the application form.`);
