@@ -72,8 +72,7 @@ jobs:
           test -n "${SITE_BUCKET_NAME}" || { echo 'AWS_S3_BUCKET is missing'; exit 1; }
       - name: Create deployment receipt
         run: |
-          printf '{"commit":"%s","run_id":"%s","deployed_at":"%s"}\n' \
-            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > site/deployment.json
+          printf '{"commit":"%s","run_id":"%s","deployed_at":"%s"}\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > site/deployment.json
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -86,7 +85,7 @@ jobs:
         run: |
           set -euo pipefail
           base="https://${DOMAIN_NAME}"
-          for path in / /curriculum/ /organizations/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json; do
+          for path in / /curriculum/ /organizations/ /privacy/ /terms/ /cookies/ /acceptable-use/ /responsible-ai/ /accessibility/ /nondiscrimination/ /data-rights/ /security/ /copyright/ /media-consent/ /grievances/ /sitemap.xml /robots.txt /.well-known/security.txt /favicon.ico /deployment.json /assets/media/edward-story.mp4 /assets/media/edward-deployment.mp4; do
             echo "Checking route ${path}"
             curl --retry 8 --retry-delay 8 -fsSI "${base}${path}" >/dev/null
           done
@@ -96,49 +95,38 @@ jobs:
           grep -qi '^x-content-type-options: nosniff' <<<"$headers"
           grep -qi '^referrer-policy: strict-origin-when-cross-origin' <<<"$headers"
           grep -qi '^permissions-policy:' <<<"$headers"
-
           homepage="$(curl --retry 8 --retry-delay 8 -fsS "${base}/")"
           curriculum="$(curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/")"
           organizations="$(curl --retry 8 --retry-delay 8 -fsS "${base}/organizations/")"
-          grep -F 'Practical AI skills for work and community life.' <<<"$homepage" >/dev/null
-          grep -F 'no-cost, tool-neutral AI literacy and skills program' <<<"$homepage" >/dev/null
-          grep -F 'Learning in practice' <<<"$homepage" >/dev/null
+          grep -F 'AI skills for real life.' <<<"$homepage" >/dev/null
+          grep -F 'Human judgment at the center.' <<<"$homepage" >/dev/null
           grep -F 'Edward Jones' <<<"$homepage" >/dev/null
           grep -F 'Capital Property Care' <<<"$homepage" >/dev/null
           grep -F 'Human judgment stays in control throughout.' <<<"$homepage" >/dev/null
+          grep -F '/assets/media/edward-story.mp4' <<<"$homepage" >/dev/null
+          grep -F '/assets/media/edward-deployment.mp4' <<<"$homepage" >/dev/null
           grep -F 'Participant story and media shared with consent.' <<<"$homepage" >/dev/null
-          grep -F 'Responsible AI skills' <<<"$homepage" >/dev/null
-          grep -F 'Program results will be published as evidence becomes available.' <<<"$homepage" >/dev/null
           grep -F 'href="/organizations/#inquiry"' <<<"$homepage" >/dev/null
-          grep -F '1W_xoDe-sK_4e3CBlLE0Gh3OyVIBSmLUu' <<<"$homepage" >/dev/null
-          grep -F '1_jNwYnOfR1bi2eZV6n776MyAOXKpNJON' <<<"$homepage" >/dev/null
+          ! grep -Eqi 'drive\.google\.com|docs\.google\.com' <<<"$homepage"
           grep -F 'Core learning areas' <<<"$curriculum" >/dev/null
           grep -F 'The curriculum is tool-neutral.' <<<"$curriculum" >/dev/null
           grep -F 'data-application-type="organization-interest"' <<<"$organizations" >/dev/null
           grep -F 'Send organization inquiry' <<<"$organizations" >/dev/null
-
           for source in "$homepage" "$curriculum" "$organizations"; do
             if grep -Eqi 'href="mailto:|Before we automate|AI Capability Lab|Meridian|Day [0-9]+ of [0-9]+|unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge' <<<"$source"; then
               echo 'Primary program page contains an email CTA, removed legacy copy, or generic hype language.'
               exit 1
             fi
           done
-
           api_body="$(mktemp)"
-          api_status="$(curl --retry 4 --retry-delay 2 -sS -o "$api_body" -w '%{http_code}' \
-            -X POST "${base}/api/applications/start" \
-            -H "Origin: ${base}" \
-            -H 'Content-Type: application/json' \
-            --data '{"website":"production-qa-probe"}')"
+          api_status="$(curl --retry 4 --retry-delay 2 -sS -o "$api_body" -w '%{http_code}' -X POST "${base}/api/applications/start" -H "Origin: ${base}" -H 'Content-Type: application/json' --data '{"website":"production-qa-probe"}')"
           echo "Application POST probe status: ${api_status}"
           test "$api_status" = '202'
           grep -F '"ok":true' "$api_body" >/dev/null
           rm -f "$api_body"
-
           method_status="$(curl --retry 4 --retry-delay 2 -sS -o /dev/null -w '%{http_code}' "${base}/api/applications/start")"
           echo "Undefined GET route status: ${method_status}"
           test "$method_status" = '404'
-
           curl --retry 8 --retry-delay 8 -fsS "${base}/robots.txt" | grep -F 'Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/.well-known/security.txt" | grep -F 'Policy: https://ai-lab.sozorockfoundation.org/security/' >/dev/null
           curl --retry 8 --retry-delay 8 -fsS "${base}/deployment.json" | grep -F "\"commit\":\"${GITHUB_SHA}\"" >/dev/null
