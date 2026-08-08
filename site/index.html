@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>SozoRock AI Lab | Practical AI Skills</title>
-  <meta name="description" content="Free, practical AI education from The SozoRock Foundation for adults and community organizations learning to use AI safely and productively.">
+  <title>Free AI Training for Adults & Nonprofits | SozoRock AI Lab</title>
+  <meta name="description" content="Free, practical AI literacy and responsible AI training for adults, nonprofits, libraries, workforce groups, and community organizations.">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <meta name="author" content="The SozoRock Foundation, Inc.">
   <meta name="theme-color" content="#102a43">
   <meta name="color-scheme" content="light">
   <link rel="canonical" href="https://ai-lab.sozorockfoundation.org/">
-  <link rel="stylesheet" href="/assets/css/option-3.css?v=20260807-2">
+  <link rel="stylesheet" href="/assets/css/option-3.css?v=20260808-1">
+  <link rel="stylesheet" href="/assets/css/campaign.css?v=20260808-3">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -19,130 +20,13 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="SozoRock AI Lab">
   <meta property="og:title" content="Practical AI skills for work and community life.">
-  <meta property="og:description" content="Free, practical AI education from The SozoRock Foundation for adults and community organizations.">
+  <meta property="og:description" content="Free, tool-neutral AI literacy and responsible AI training grounded in guided practice, real work, and human judgment.">
   <meta property="og:url" content="https://ai-lab.sozorockfoundation.org/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@srockfoundation">
   <meta name="twitter:title" content="Practical AI skills for work and community life.">
-  <meta name="twitter:description" content="Free, practical AI education from The SozoRock Foundation for adults and community organizations.">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"NGO","@id":"https://www.sozorockfoundation.org/#organization","name":"The SozoRock Foundation, Inc.","url":"https://www.sozorockfoundation.org/","email":"contact@sozorockfoundation.org","address":{"@type":"PostalAddress","addressLocality":"Albany","addressRegion":"NY","addressCountry":"US"},"sameAs":["https://x.com/srockfoundation"]},{"@type":"WebSite","@id":"https://ai-lab.sozorockfoundation.org/#website","url":"https://ai-lab.sozorockfoundation.org/","name":"SozoRock AI Lab","publisher":{"@id":"https://www.sozorockfoundation.org/#organization"},"inLanguage":"en-US"},{"@type":"EducationalOccupationalProgram","@id":"https://ai-lab.sozorockfoundation.org/#program","name":"SozoRock AI Lab","description":"A no-cost education program that helps adults and community organizations learn how to use everyday AI tools safely, critically, and productively.","url":"https://ai-lab.sozorockfoundation.org/","provider":{"@id":"https://www.sozorockfoundation.org/#organization"},"educationalProgramMode":["In person","Online","Hybrid"],"isAccessibleForFree":true}]}</script>
-  <style>
-    .evidence-section { background: var(--white); }
-    .evidence-lead {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
-      gap: 76px;
-      align-items: start;
-    }
-    .evidence-project {
-      padding: 30px 0 26px;
-      border-top: 1px solid var(--ink);
-      border-bottom: 1px solid var(--line);
-    }
-    .evidence-project > span {
-      display: block;
-      margin-bottom: 28px;
-      color: var(--accent-dark);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .evidence-project strong {
-      display: block;
-      font-size: clamp(1.7rem, 3vw, 2.5rem);
-      line-height: 1.05;
-      letter-spacing: -.035em;
-    }
-    .evidence-project p { margin: 10px 0 22px; color: var(--muted); }
-    .evidence-project a { font-weight: 750; }
-    .evidence-journey { margin-top: 56px; }
-    .evidence-journey ol {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      border-top: 1px solid var(--accent-dark);
-    }
-    .evidence-journey li {
-      position: relative;
-      min-height: 154px;
-      padding: 28px 20px 22px 0;
-      border-bottom: 1px solid var(--line);
-      border-right: 1px solid var(--line);
-    }
-    .evidence-journey li + li { padding-left: 20px; }
-    .evidence-journey li:last-child { border-right: 0; }
-    .evidence-journey li::before {
-      content: "";
-      position: absolute;
-      width: 9px;
-      height: 9px;
-      top: -5px;
-      left: 0;
-      border-radius: 50%;
-      background: var(--accent-dark);
-    }
-    .evidence-journey li + li::before { left: 20px; }
-    .evidence-journey span {
-      display: block;
-      margin-bottom: 28px;
-      color: var(--accent-dark);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .08em;
-    }
-    .evidence-journey strong { display: block; font-size: 1.12rem; }
-    .evidence-journey small {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .evidence-note {
-      display: grid;
-      grid-template-columns: minmax(240px, .72fr) minmax(0, 1.28fr);
-      gap: 76px;
-      margin-top: 48px;
-      padding: 30px 0 0;
-      border-top: 1px solid var(--ink);
-    }
-    .evidence-note strong {
-      font-size: clamp(1.45rem, 2.6vw, 2rem);
-      line-height: 1.15;
-      letter-spacing: -.025em;
-    }
-    .evidence-note p { max-width: 720px; margin: 0 0 12px; color: var(--muted); }
-    .evidence-note .consent-note { font-size: 13px; }
-    @media (max-width: 900px) {
-      .evidence-lead,
-      .evidence-note { grid-template-columns: 1fr; gap: 30px; }
-      .evidence-journey ol { grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 0; }
-      .evidence-journey li,
-      .evidence-journey li + li { padding: 24px 18px 22px 0; border-top: 1px solid var(--accent-dark); }
-      .evidence-journey li:nth-child(3n+2),
-      .evidence-journey li:nth-child(3n+3) { padding-left: 18px; }
-      .evidence-journey li::before,
-      .evidence-journey li + li::before { left: 0; }
-      .evidence-journey li:nth-child(3n+2)::before,
-      .evidence-journey li:nth-child(3n+3)::before { left: 18px; }
-    }
-    @media (max-width: 560px) {
-      .evidence-journey { margin-top: 42px; }
-      .evidence-journey ol { grid-template-columns: 1fr; }
-      .evidence-journey li,
-      .evidence-journey li + li,
-      .evidence-journey li:nth-child(3n+2),
-      .evidence-journey li:nth-child(3n+3) { min-height: auto; padding: 22px 0; border-right: 0; }
-      .evidence-journey li::before,
-      .evidence-journey li + li::before,
-      .evidence-journey li:nth-child(3n+2)::before,
-      .evidence-journey li:nth-child(3n+3)::before { left: 0; }
-      .evidence-journey span { margin-bottom: 12px; }
-    }
-  </style>
+  <meta name="twitter:description" content="Free, tool-neutral AI literacy and responsible AI training grounded in guided practice, real work, and human judgment.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"NGO","@id":"https://www.sozorockfoundation.org/#organization","name":"The SozoRock Foundation, Inc.","url":"https://www.sozorockfoundation.org/","email":"contact@sozorockfoundation.org","address":{"@type":"PostalAddress","addressLocality":"Albany","addressRegion":"NY","addressCountry":"US"},"sameAs":["https://x.com/srockfoundation"]},{"@type":"WebSite","@id":"https://ai-lab.sozorockfoundation.org/#website","url":"https://ai-lab.sozorockfoundation.org/","name":"SozoRock AI Lab","publisher":{"@id":"https://www.sozorockfoundation.org/#organization"},"inLanguage":"en-US"},{"@type":"EducationalOccupationalProgram","@id":"https://ai-lab.sozorockfoundation.org/#program","name":"SozoRock AI Lab","description":"A no-cost, tool-neutral AI literacy and skills program for adults and community organizations focused on practical use, verification, privacy, security, and human judgment.","url":"https://ai-lab.sozorockfoundation.org/","provider":{"@id":"https://www.sozorockfoundation.org/#organization"},"educationalProgramMode":["In person","Online","Hybrid"],"isAccessibleForFree":true,"audience":{"@type":"Audience","audienceType":"Adults, nonprofit staff, community workers, workforce learners, libraries, and community organizations"}}]}</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -150,178 +34,150 @@
   <div class="header-inner">
     <a class="brand" href="/" aria-label="SozoRock AI Lab home"><span>SOZOROCK</span><span>AI LAB</span></a>
     <nav class="primary-nav" aria-label="Primary navigation">
-      <a href="#who">Who the Lab serves</a>
-      <a href="/curriculum/">What participants learn</a>
+      <a href="/curriculum/">Curriculum</a>
+      <a href="#practice">Edward's story</a>
       <a href="/organizations/">For organizations</a>
-      <a class="nav-apply" href="#apply">Apply</a>
+      <a class="nav-apply" href="#apply">Apply to the AI Lab</a>
     </nav>
   </div>
 </header>
+
 <main id="main">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="shell hero-grid">
-      <div class="hero-main">
+  <section class="campaign-hero" aria-labelledby="hero-title">
+    <div class="shell campaign-hero-grid">
+      <div class="campaign-copy">
         <h1 id="hero-title">Practical AI skills for work and community life.</h1>
         <div class="hero-copy">
-          <p><strong>SozoRock AI Lab is a no-cost education program of The SozoRock Foundation.</strong></p>
-          <p>We help adults and community organizations learn how to use everyday AI tools safely, critically, and productively.</p>
-          <p>No technical background is required.</p>
+          <p><strong>SozoRock AI Lab is a no-cost, tool-neutral AI literacy and skills program for adults and community organizations.</strong></p>
+          <p>Learn to use everyday AI tools safely, critically, and productively through guided practice and real work.</p>
+          <p>No technical background required.</p>
         </div>
         <div class="actions">
-          <a class="button primary" href="#apply">Apply to participate</a>
-          <a class="button" href="/organizations/#inquiry">Host a workshop</a>
+          <a class="button primary" href="#apply">Apply to the AI Lab</a>
+          <a class="button" href="/organizations/#inquiry">Bring training to your organization</a>
         </div>
       </div>
-      <figure class="learning-route" aria-labelledby="route-title">
-        <figcaption id="route-title">A practical learning path</figcaption>
-        <ol>
-          <li><span>01</span><strong>Understand</strong><small>what current AI tools can and cannot do</small></li>
-          <li><span>02</span><strong>Use</strong><small>AI for common work</small></li>
-          <li><span>03</span><strong>Check</strong><small>information before relying on it</small></li>
-          <li><span>04</span><strong>Build</strong><small>a useful AI-assisted process</small></li>
-        </ol>
+      <figure class="participant-still evidence-project hero-visual">
+        <figcaption class="hero-story-card">
+          <span>Learning in practice</span>
+          <strong>Edward Jones built for a real business.</strong>
+          <p>From learning the tools to launching Capital Property Care online, with review, security, and human judgment throughout.</p>
+          <a href="#practice">See Edward's story</a>
+        </figcaption>
       </figure>
     </div>
-    <div class="shell facts-strip" aria-label="Program facts">
-      <p><strong>No technical background</strong><span>required</span></p>
-      <p><strong>No cost</strong><span>to participate</span></p>
-      <p><strong>Tool-neutral</strong><span>training</span></p>
+    <div class="shell promise-strip" aria-label="What makes the AI Lab different">
+      <p><strong>Tool-neutral</strong><span>Learn principles that transfer across AI products.</span></p>
+      <p><strong>Real work</strong><span>Practice on useful tasks and real projects.</span></p>
+      <p><strong>Human judgment</strong><span>Verify, protect information, and decide what goes live.</span></p>
     </div>
   </section>
 
-  <section class="section" id="who" aria-labelledby="who-title">
-    <div class="shell section-grid audience-section">
-      <div>
-        <h2 id="who-title">Who the Lab serves</h2>
-        <div class="section-copy intro-copy">
-          <p>The Lab is designed for people and organizations that want practical experience with AI but may not have access to formal technology training.</p>
-          <p>Participants may include nonprofit staff, community workers, adult learners, local organizations, and people who want to become more confident using AI in their work.</p>
+  <section class="campaign-section pathway" aria-labelledby="pathway-title">
+    <div class="shell">
+      <div class="pathway-head">
+        <div>
+          <p class="section-kicker">Practical AI literacy</p>
+          <h2 id="pathway-title">Learn it. Make something. Check it. Use it.</h2>
         </div>
+        <p class="section-lead">The Lab is built around practical work, not abstract AI lessons. Participants learn enough to act, then practice on tasks that matter to them.</p>
       </div>
-      <ol class="audience-ledger" aria-label="Participant groups">
-        <li><span>01</span><strong>Nonprofit staff</strong></li>
-        <li><span>02</span><strong>Community workers</strong></li>
-        <li><span>03</span><strong>Adult learners</strong></li>
-        <li><span>04</span><strong>Local organizations</strong></li>
-      </ol>
+      <div class="pathway-line" aria-label="Practical learning pathway">
+        <div class="pathway-step"><strong>Learn</strong><p>Understand what AI can and cannot do.</p></div>
+        <div class="pathway-step"><strong>Make</strong><p>Use the tools on a real task or problem.</p></div>
+        <div class="pathway-step"><strong>Check</strong><p>Verify the work, protect information, and improve what matters.</p></div>
+        <div class="pathway-step"><strong>Use</strong><p>Put the reviewed result into practice.</p></div>
+      </div>
+      <p class="judgment-thread">Human judgment stays in control throughout.</p>
     </div>
   </section>
 
-  <section class="section evidence-section" id="practice" aria-labelledby="practice-title">
-    <div class="shell evidence-lead">
-      <div>
-        <h2 id="practice-title">Learning in practice</h2>
-        <div class="section-copy intro-copy">
-          <p>Edward Jones brought a real business need to the AI Lab: build and deploy a website for his interior painting business, Capital Property Care.</p>
-          <p>The work moved from learning how to direct AI tools, to building and reviewing the site, to deployment with attention to security and human judgment.</p>
+  <section class="campaign-section story-section" id="practice" aria-labelledby="practice-title">
+    <div class="shell story-grid">
+      <figure class="participant-still evidence-project story-image" aria-hidden="true"></figure>
+      <div class="story-copy">
+        <p class="section-kicker">Learning in practice</p>
+        <h2 id="practice-title">A real business need became a live project.</h2>
+        <p class="section-lead">Edward Jones used the AI Lab to learn, build, review, secure, and deploy a website for his interior painting business, Capital Property Care.</p>
+        <div class="story-facts" aria-label="Capital Property Care project">
+          <p><strong>Learn</strong>Use AI with purpose.</p>
+          <p><strong>Build</strong>Work on a real business need.</p>
+          <p><strong>Deploy</strong>Launch only after review.</p>
         </div>
-      </div>
-      <aside class="evidence-project" aria-label="Participant project">
-        <span>Participant project</span>
-        <strong>Capital Property Care</strong>
-        <p>Interior painting business</p>
-        <a href="https://www.capitalpropertycare.com/" rel="noopener noreferrer">capitalpropertycare.com</a>
-      </aside>
-    </div>
-    <div class="shell evidence-journey" aria-label="Participant learning and deployment journey">
-      <ol>
-        <li><span>01</span><strong>Learn</strong><small>understand the tool and the business task</small></li>
-        <li><span>02</span><strong>Build</strong><small>turn a real need into working website components</small></li>
-        <li><span>03</span><strong>Review</strong><small>inspect output instead of accepting it automatically</small></li>
-        <li><span>04</span><strong>Secure</strong><small>handle integrations and deployment with appropriate safeguards</small></li>
-        <li><span>05</span><strong>Deploy</strong><small>move the reviewed work into a live environment</small></li>
-        <li><span>06</span><strong>Human judgment</strong><small>stays in control of what goes live</small></li>
-      </ol>
-    </div>
-    <div class="shell evidence-note">
-      <strong>Human judgment stays in control.</strong>
-      <div>
-        <p>AI can help plan, draft, troubleshoot, and accelerate work. The participant still reviews what is built, decides what is appropriate, and remains responsible for what goes live.</p>
+        <div class="story-actions">
+          <a class="button primary" href="https://www.capitalpropertycare.com/" rel="noopener noreferrer">Visit Capital Property Care</a>
+          <a href="https://drive.google.com/file/d/1W_xoDe-sK_4e3CBlLE0Gh3OyVIBSmLUu/view" target="_blank" rel="noopener noreferrer">Watch Edward's AI Lab video</a>
+          <a href="https://drive.google.com/file/d/1_jNwYnOfR1bi2eZV6n776MyAOXKpNJON/view" target="_blank" rel="noopener noreferrer">See deployment footage</a>
+        </div>
         <p class="consent-note">Participant story and media shared with consent.</p>
       </div>
     </div>
   </section>
 
-  <section class="section soft" id="learning" aria-labelledby="learning-title">
-    <div class="shell">
-      <div class="section-heading-row">
-        <h2 id="learning-title">What participants learn</h2>
-        <p>Training focuses on practical use.</p>
-      </div>
-      <ol class="learning-ledger">
-        <li><span>01</span><p>understand what current AI tools can and cannot do;</p></li>
-        <li><span>02</span><p>use AI for common work such as writing, research, meetings, planning, and information organization;</p></li>
-        <li><span>03</span><p>check AI-generated information before relying on it;</p></li>
-        <li><span>04</span><p>protect private and sensitive information;</p></li>
-        <li><span>05</span><p>recognize situations where human judgment should remain in control; and</p></li>
-        <li><span>06</span><p>develop a useful AI-assisted process for work they already perform.</p></li>
-      </ol>
-      <p class="section-note">The Lab is tool-neutral. Participants may encounter different AI products depending on the activity and available access.</p>
-      <p><a class="text-link" href="/curriculum/">Read the curriculum overview</a></p>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="training-title">
-    <div class="shell">
-      <div class="section-heading-row">
-        <h2 id="training-title">How training works</h2>
-        <p>Each program publishes its audience, schedule, format, and learning objectives before enrollment.</p>
-      </div>
-      <div class="format-rail">
-        <article><span>01</span><h3>Community workshops</h3></article>
-        <article><span>02</span><h3>Guided learning sessions</h3></article>
-        <article><span>03</span><h3>Cohort-based training</h3></article>
-      </div>
-      <p class="section-note">Participation is offered at no cost.</p>
-    </div>
-  </section>
-
-  <section class="section measure-section" aria-labelledby="measure-title">
-    <div class="shell measure-grid">
+  <section class="campaign-section learning-section" aria-labelledby="learning-title">
+    <div class="shell learning-compact">
       <div>
-        <h2 id="measure-title">What we measure</h2>
-        <div class="section-copy">
-          <p>The goal is not simply to expose people to AI.</p>
-          <p>We want to know whether participants leave better able to use these tools independently and responsibly.</p>
+        <p class="section-kicker">Responsible AI skills</p>
+        <h2 id="learning-title">Skills participants can use after the session ends.</h2>
+        <p class="section-lead">The goal is independent, critical and responsible use, not dependence on a particular AI product.</p>
+      </div>
+      <div class="learning-pillars">
+        <div class="learning-pillar"><strong>Work with confidence</strong><p>Use AI to organize, research, write, plan, and solve everyday problems.</p></div>
+        <div class="learning-pillar"><strong>Make better decisions</strong><p>Question outputs, verify important information, and know when not to rely on AI.</p></div>
+        <div class="learning-pillar"><strong>Create what matters</strong><p>Build useful work while protecting private and sensitive information.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="campaign-section training-band" aria-labelledby="training-title">
+    <div class="shell training-grid">
+      <div>
+        <p class="section-kicker">AI workshops and guided learning</p>
+        <h2 id="training-title">Training that fits real life.</h2>
+      </div>
+      <div class="training-options">
+        <p><strong>Community workshops</strong>Hands-on group sessions.</p>
+        <p><strong>Guided practice</strong>Support while working on real tasks.</p>
+        <p><strong>Flexible formats</strong>In person, online, or hybrid.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="campaign-section measure-section-campaign" aria-labelledby="measure-title">
+    <div class="shell measure-compact">
+      <div>
+        <p class="section-kicker">Evidence, not hype</p>
+        <h2 id="measure-title">We measure whether the learning becomes useful.</h2>
+        <p class="section-lead">Program results will be published as evidence becomes available.</p>
+      </div>
+      <div>
+        <div class="measure-tags" aria-label="Evaluation areas">
+          <span>Confidence</span><span>Task completion</span><span>Quality</span><span>Time saved</span><span>Verification</span><span>Continued use</span>
         </div>
-      </div>
-      <div class="measure-list" aria-label="Evaluation areas">
-        <p>Confidence</p>
-        <p>Task completion</p>
-        <p>Quality</p>
-        <p>Time saved</p>
-        <p>Ability to verify AI output</p>
-        <p>Continued use after training</p>
-      </div>
-      <p class="measure-note">Program results will be published as evidence becomes available.</p>
-    </div>
-  </section>
-
-  <section class="section organization-band" id="organizations" aria-labelledby="organizations-title">
-    <div class="shell organization-grid">
-      <div>
-        <h2 id="organizations-title">For community organizations</h2>
-        <p>Libraries, nonprofits, workforce organizations, educational institutions, local governments, and other community partners may work with the Lab to make practical AI education available to the people they serve.</p>
-      </div>
-      <ul class="organization-actions">
-        <li>Host a workshop</li>
-        <li>Refer participants</li>
-        <li>Sponsor participant access</li>
-        <li>Support technology access</li>
-        <li>Collaborate on research and evaluation</li>
-      </ul>
-      <div class="actions organization-cta">
-        <a class="button primary" href="/organizations/#inquiry">Work with the Lab</a>
-        <a class="text-link" href="/organizations/">See options for organizations</a>
+        <p class="measure-note-campaign">We publish only results we can substantiate.</p>
       </div>
     </div>
   </section>
 
-  <section class="section soft" id="apply" aria-labelledby="apply-title">
+  <section class="campaign-section partner-section" aria-labelledby="partner-title">
+    <div class="shell partner-grid">
+      <div class="partner-copy">
+        <p class="section-kicker">For community organizations</p>
+        <h2 id="partner-title">Bring practical AI learning to the people you serve.</h2>
+        <p>Libraries, nonprofits, workforce organizations, educational institutions, local governments, and community partners can host training, refer participants, support technology access, or collaborate on evaluation.</p>
+      </div>
+      <div class="partner-actions">
+        <a class="button primary" href="/organizations/#inquiry">Request an AI workshop</a>
+        <a class="button" href="/organizations/">See partnership options</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="campaign-section application-campaign" id="apply" aria-labelledby="apply-title">
     <div class="shell application-wrap">
       <div class="application-intro">
-        <h2 id="apply-title">Participate</h2>
-        <p>Tell us who you are, what you would like to learn, and how you hope to use the training.</p>
+        <p class="section-kicker">Join the AI Lab</p>
+        <h2 id="apply-title">Tell us what you want to learn.</h2>
         <p>Applications and expressions of interest are reviewed on a rolling basis.</p>
       </div>
       <form class="application-form" data-application-form data-application-type="participant-interest" data-success-message="Your interest form was received. We will review it and contact you with next steps." novalidate>
@@ -331,19 +187,24 @@
           <label class="field"><span>Last name *</span><input name="lastName" autocomplete="family-name" maxlength="80" required></label>
         </div>
         <label class="field"><span>Email *</span><input type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" required></label>
-        <div class="form-row">
-          <label class="field"><span>City or region</span><input name="region" autocomplete="address-level2" maxlength="120"></label>
-          <label class="field"><span>Role or organization</span><input name="roleOrOrganization" maxlength="160"></label>
-        </div>
-        <div class="form-row">
-          <label class="field"><span>Preferred format</span><select name="preferredFormat"><option value="">Select one</option><option>In person</option><option>Online</option><option>Hybrid</option><option>No preference</option></select></label>
-          <label class="field"><span>Experience with AI</span><select name="technicalExperience"><option value="">Select one</option><option>New to AI tools</option><option>Use AI occasionally</option><option>Use AI regularly</option><option>Build workflows or software</option></select></label>
-        </div>
         <label class="field"><span>What would you like to learn or use AI for? *</span><textarea name="build" minlength="20" maxlength="2000" required></textarea></label>
-        <label class="field"><span>Does this involve sensitive or confidential information?</span><select name="sensitiveData"><option value="">Select one</option><option>No</option><option>Yes</option><option>Not sure</option></select></label>
-        <label class="field"><span>Access or accommodation request</span><textarea name="accessNeeds" maxlength="1000"></textarea></label>
+        <details class="form-more">
+          <summary>Add optional details</summary>
+          <div class="form-more-grid">
+            <div class="form-row">
+              <label class="field"><span>City or region</span><input name="region" autocomplete="address-level2" maxlength="120"></label>
+              <label class="field"><span>Role or organization</span><input name="roleOrOrganization" maxlength="160"></label>
+            </div>
+            <div class="form-row">
+              <label class="field"><span>Preferred format</span><select name="preferredFormat"><option value="">Select one</option><option>In person</option><option>Online</option><option>Hybrid</option><option>No preference</option></select></label>
+              <label class="field"><span>Experience with AI</span><select name="technicalExperience"><option value="">Select one</option><option>New to AI tools</option><option>Use AI occasionally</option><option>Use AI regularly</option><option>Build workflows or software</option></select></label>
+            </div>
+            <label class="field"><span>Does this involve sensitive or confidential information?</span><select name="sensitiveData"><option value="">Select one</option><option>No</option><option>Yes</option><option>Not sure</option></select></label>
+            <label class="field"><span>Access or accommodation request</span><textarea name="accessNeeds" maxlength="1000"></textarea></label>
+          </div>
+        </details>
         <label class="consent"><input type="checkbox" name="consent" required><span>I agree that The SozoRock Foundation, Inc. may review this submission and contact me about the AI Lab. *</span></label>
-        <p class="privacy-note">Do not submit private customer, patient, student, employee, financial, legal, or account information. Read the <a href="/privacy/">Privacy Notice</a>.</p>
+        <p class="privacy-note"><strong>Do not submit private customer, patient, student, employee, financial, legal, or account information.</strong> Read the <a href="/privacy/">Privacy Notice</a>.</p>
         <div class="form-actions">
           <button class="button primary" type="submit" data-submit>Apply to the AI Lab</button>
           <p class="form-status" role="status" aria-live="polite" data-form-status></p>
@@ -352,6 +213,7 @@
     </div>
   </section>
 </main>
+
 <footer class="site-footer">
   <div class="shell footer-inner">
     <p class="footer-copy">SozoRock AI Lab is a program of The SozoRock Foundation Inc., a nonprofit, tax-exempt charitable organization.</p>
@@ -359,6 +221,7 @@
       <a href="https://www.sozorockfoundation.org/" rel="noopener">Foundation</a>
       <a href="/curriculum/">Curriculum</a>
       <a href="/organizations/">For organizations</a>
+      <a href="/responsible-ai/">Responsible AI</a>
       <a href="/privacy/">Privacy</a>
       <a href="/terms/">Terms</a>
       <a href="/accessibility/">Accessibility</a>
@@ -368,6 +231,6 @@
   </div>
   <p class="copyright">© 2026 The SozoRock Foundation, Inc. All rights reserved.</p>
 </footer>
-<script src="/assets/js/main.js?v=20260807-2" defer></script>
+<script src="/assets/js/main.js?v=20260808-1" defer></script>
 </body>
 </html>
