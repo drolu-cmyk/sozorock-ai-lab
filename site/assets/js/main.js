@@ -1,22 +1,11 @@
 (() => {
   'use strict';
 
-  const dialog = document.querySelector('[data-video-dialog]');
-  const openVideo = document.querySelector('[data-video-open]');
-  const closeVideo = document.querySelector('[data-video-close]');
-  const edwardVideo = document.querySelector('[data-edward-video]');
-
-  if (dialog instanceof HTMLDialogElement && openVideo instanceof HTMLButtonElement) {
-    openVideo.addEventListener('click', () => {
-      dialog.showModal();
-      if (edwardVideo instanceof HTMLVideoElement) edwardVideo.play().catch(() => {});
-    });
-    const close = () => {
-      if (edwardVideo instanceof HTMLVideoElement) edwardVideo.pause();
-      dialog.close();
-    };
-    if (closeVideo instanceof HTMLButtonElement) closeVideo.addEventListener('click', close);
-    dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
+  if (document.body.classList.contains('visual-first-home')) {
+    const motionStyles = document.createElement('link');
+    motionStyles.rel = 'stylesheet';
+    motionStyles.href = '/assets/css/motion-proof.css?v=20260808-1';
+    document.head.appendChild(motionStyles);
   }
 
   const formStartedAt = new Date().toISOString();
