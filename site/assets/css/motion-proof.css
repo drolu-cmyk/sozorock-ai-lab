@@ -1,0 +1,7 @@
+/* Documentary motion excerpts layered over the approved visual-first campaign. */
+.vf-motion-inset{position:absolute;z-index:3;right:24px;bottom:24px;width:min(42%,260px);border:1px solid rgba(255,255,255,.72);background:#0b2236;box-shadow:0 16px 38px rgba(7,32,48,.22)}
+.vf-motion-inset video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#0b2236}
+.vf-motion-inset span{display:block;padding:8px 10px;color:#fff;font-size:11px;font-weight:760;letter-spacing:.02em}
+.vf-person-label{left:24px;bottom:24px;max-width:calc(58% - 36px)}
+@media(max-width:720px){.vf-motion-inset{right:16px;bottom:16px;width:42%}.vf-person-label{left:16px;bottom:16px;max-width:48%;padding:11px 12px}.vf-motion-inset span{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.vf-motion-inset video{display:none}.vf-motion-inset{min-height:46px}}
