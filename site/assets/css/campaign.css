@@ -11,7 +11,7 @@ body { background: #fff; }
 .site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.97); backdrop-filter: blur(10px); }
 .header-inner { min-height: 72px; }
 .brand { gap: 0; }
-.brand span:first-child { font-size: 13px; }
+.brand span:first-child { font-size: 13px; font-weight: 800; }
 .brand span:last-child { color: var(--campaign-teal); font-size: 14px; }
 .primary-nav { gap: 16px; }
 .primary-nav a { min-height: 44px; display: inline-flex; align-items: center; font-size: 13px; }
@@ -27,9 +27,10 @@ body { background: #fff; }
 .campaign-hero .actions { margin-top: 26px; }
 .campaign-hero .button { border-radius: 6px; min-height: 48px; }
 
-.hero-visual { position: relative; margin: 0; min-height: 560px; padding: 0; overflow: hidden; border: 0; background: #d6ddd8; }
-.hero-visual::before { height: 100% !important; aspect-ratio: auto !important; margin: 0 !important; border: 0 !important; background-position: center 28% !important; background-size: cover !important; }
-.hero-story-card { position: absolute; left: 28px; right: 28px; bottom: 28px; max-width: 410px; padding: 22px 24px; background: rgba(16,42,67,.94); color: #fff; border-radius: 8px; }
+.hero-visual { position: relative; isolation: isolate; margin: 0; min-height: 560px; padding: 0; overflow: hidden; border: 0; background: #d6ddd8; }
+.hero-visual::before,
+.story-image::before { position: absolute !important; inset: 0 !important; z-index: 0; display: block !important; width: 100% !important; height: 100% !important; aspect-ratio: auto !important; margin: 0 !important; border: 0 !important; background-position: center 28% !important; background-size: cover !important; background-repeat: no-repeat !important; }
+.hero-story-card { position: absolute; z-index: 1; left: 28px; right: 28px; bottom: 28px; max-width: 410px; padding: 22px 24px; background: rgba(16,42,67,.94); color: #fff; border-radius: 8px; }
 .hero-story-card span { display: block; margin-bottom: 8px; color: #9edbd5; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .hero-story-card strong { display: block; font-size: 1.5rem; line-height: 1.12; letter-spacing: -.02em; }
 .hero-story-card p { margin: 8px 0 0; color: #e7eef3; font-size: 14px; line-height: 1.45; }
@@ -58,8 +59,8 @@ body { background: #fff; }
 
 .story-section { background: var(--campaign-mint); }
 .story-grid { display: grid; grid-template-columns: minmax(360px,.9fr) minmax(0,1.1fr); gap: 56px; align-items: center; }
-.story-image { position: relative; min-height: 430px; padding: 0; border: 0; overflow: hidden; background: #d6ddd8; }
-.story-image::before { height: 100% !important; aspect-ratio: auto !important; margin: 0 !important; border: 0 !important; background-position: center 26% !important; background-size: cover !important; }
+.story-image { position: relative; isolation: isolate; min-height: 430px; padding: 0; border: 0; overflow: hidden; background: #d6ddd8; }
+.story-image::before { background-position: center 26% !important; }
 .story-copy .section-lead { margin-top: 18px; }
 .story-facts { display: grid; grid-template-columns: repeat(3,1fr); margin-top: 30px; border-top: 1px solid rgba(11,98,93,.35); }
 .story-facts p { margin: 0; padding: 18px 18px 0 0; color: var(--muted); font-size: 14px; }
