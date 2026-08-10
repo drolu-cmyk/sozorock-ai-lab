@@ -106,6 +106,7 @@ jobs:
           grep -F 'Our practical method' <<<"$homepage" >/dev/null
           grep -F 'A real project, open to the public.' <<<"$homepage" >/dev/null
           grep -F '/assets/media/capital-property-care-live.png' <<<"$homepage" >/dev/null
+          grep -F '/assets/css/visual-first.css?v=20260810-2' <<<"$homepage" >/dev/null
           grep -F 'Participant story and media shared with consent.' <<<"$homepage" >/dev/null
           grep -F 'href="/organizations/#inquiry"' <<<"$homepage" >/dev/null
           ! grep -Eqi 'drive\.google\.com|docs\.google\.com' <<<"$homepage"
