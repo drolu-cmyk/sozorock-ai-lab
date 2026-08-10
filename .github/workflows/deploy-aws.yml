@@ -98,6 +98,7 @@ jobs:
           homepage="$(curl --retry 8 --retry-delay 8 -fsS "${base}/")"
           curriculum="$(curl --retry 8 --retry-delay 8 -fsS "${base}/curriculum/")"
           organizations="$(curl --retry 8 --retry-delay 8 -fsS "${base}/organizations/")"
+          privacy="$(curl --retry 8 --retry-delay 8 -fsS "${base}/privacy/")"
           grep -F 'AI skills for real life.' <<<"$homepage" >/dev/null
           grep -F 'Human judgment at the center.' <<<"$homepage" >/dev/null
           grep -F 'Learning in practice' <<<"$homepage" >/dev/null
@@ -106,6 +107,7 @@ jobs:
           grep -F 'Our practical method' <<<"$homepage" >/dev/null
           grep -F 'A real project, open to the public.' <<<"$homepage" >/dev/null
           grep -F '/assets/media/capital-property-care-live.png' <<<"$homepage" >/dev/null
+          grep -F '/assets/css/option-3.css?v=20260810-2' <<<"$homepage" >/dev/null
           grep -F '/assets/css/visual-first.css?v=20260810-2' <<<"$homepage" >/dev/null
           grep -F 'Participant story and media shared with consent.' <<<"$homepage" >/dev/null
           grep -F 'href="/organizations/#inquiry"' <<<"$homepage" >/dev/null
@@ -115,6 +117,13 @@ jobs:
           grep -F 'The curriculum is tool-neutral.' <<<"$curriculum" >/dev/null
           grep -F 'data-application-type="organization-interest"' <<<"$organizations" >/dev/null
           grep -F 'Send organization inquiry' <<<"$organizations" >/dev/null
+          for source in "$homepage" "$curriculum" "$organizations" "$privacy"; do
+            grep -F 'href="/cookies/">Cookie notice</a>' <<<"$source" >/dev/null
+            grep -F 'href="/data-rights/">Data rights</a>' <<<"$source" >/dev/null
+            grep -F 'href="/security/">Privacy or security concern</a>' <<<"$source" >/dev/null
+            grep -F 'href="/grievances/">Complaint or grievance</a>' <<<"$source" >/dev/null
+          done
+          grep -F '/assets/css/styles.css?v=20260810-1' <<<"$privacy" >/dev/null
           for source in "$homepage" "$curriculum" "$organizations"; do
             if grep -Eqi 'href="mailto:|Before we automate|AI Capability Lab|Meridian|Day [0-9]+ of [0-9]+|unlock your potential|transform your future|revolutionize|game[- ]changer|supercharge' <<<"$source"; then
               echo 'Primary program page contains an email CTA, removed legacy copy, or generic hype language.'
