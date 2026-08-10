@@ -45,7 +45,7 @@ for (const file of pages) {
 const sitemap = fs.readFileSync(path.join(site,'sitemap.xml'),'utf8');
 const slugs = ['curriculum','organizations','privacy','terms','cookies','acceptable-use','responsible-ai','accessibility','nondiscrimination','data-rights','security','copyright','media-consent','grievances'];
 for (const slug of slugs) if (!sitemap.includes(`<loc>https://ai-lab.sozorockfoundation.org/${slug}/</loc>`)) failures.push(`sitemap.xml: missing ${slug}`);
-if (!sitemap.includes('<lastmod>2026-08-07</lastmod>')) failures.push('sitemap.xml: missing current lastmod');
+if (!sitemap.includes('<lastmod>2026-08-10</lastmod>')) failures.push('sitemap.xml: missing current lastmod');
 const robots = fs.readFileSync(path.join(site,'robots.txt'),'utf8');
 if (!robots.includes('Disallow: /api/')) failures.push('robots.txt: API route must be excluded');
 if (!robots.includes('Sitemap: https://ai-lab.sozorockfoundation.org/sitemap.xml')) failures.push('robots.txt: missing canonical sitemap');

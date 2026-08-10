@@ -25,10 +25,14 @@ for(const file of files){
 }
 const baseCss=fs.readFileSync(path.join(root,'site/assets/css/option-3.css'),'utf8');
 for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!baseCss.includes(rule)) failures.push(`option-3.css: missing ${rule}`);
+if(!/\.footer-col a\s*\{[\s\S]*?min-height:\s*44px/i.test(baseCss)&&!/\.footer-foundation,\s*\.footer-col a\s*\{[\s\S]*?min-height:\s*44px/i.test(baseCss))failures.push('option-3.css: footer links need 44px touch targets.');
 const campaignCss=fs.readFileSync(path.join(root,'site/assets/css/campaign.css'),'utf8');
 for(const rule of ['min-height: 44px','scroll-margin-top','@media (max-width: 720px)']) if(!campaignCss.includes(rule)) failures.push(`campaign.css: missing ${rule}`);
 const visualCss=fs.readFileSync(path.join(root,'site/assets/css/visual-first.css'),'utf8');
 if(!visualCss.includes('@media(max-width:1100px)')||!visualCss.includes('.vf-hero-grid,.vf-proof-grid,.vf-action-grid,.vf-apply .application-wrap{grid-template-columns:1fr}')) failures.push('visual-first.css: hero must collapse before its minimum grid tracks can overflow.');
+const legalCss=fs.readFileSync(path.join(root,'site/assets/css/styles.css'),'utf8');
+if(!/\.footer-foundation,\s*\.footer-col a\s*\{[\s\S]*?min-height:\s*44px/i.test(legalCss))failures.push('styles.css: legal footer links need 44px touch targets.');
+if(!legalCss.includes('.legal-nav a:nth-child(2),.legal-nav a:nth-child(4),.legal-nav a:last-child'))failures.push('styles.css: legal navigation must collapse before it overflows on mobile.');
 const homepage=fs.readFileSync(path.join(root,'site/index.html'),'utf8');
 for(const name of ['firstName','lastName','email','build','consent']){
   const rx=new RegExp(`<label[^>]*>[\\s\\S]*?name="${name}"[\\s\\S]*?<\\/label>`,'i');
