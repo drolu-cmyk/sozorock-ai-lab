@@ -27,6 +27,8 @@ const baseCss=fs.readFileSync(path.join(root,'site/assets/css/option-3.css'),'ut
 for(const rule of [':focus-visible','prefers-reduced-motion','min-height: 48px']) if(!baseCss.includes(rule)) failures.push(`option-3.css: missing ${rule}`);
 const campaignCss=fs.readFileSync(path.join(root,'site/assets/css/campaign.css'),'utf8');
 for(const rule of ['min-height: 44px','scroll-margin-top','@media (max-width: 720px)']) if(!campaignCss.includes(rule)) failures.push(`campaign.css: missing ${rule}`);
+const visualCss=fs.readFileSync(path.join(root,'site/assets/css/visual-first.css'),'utf8');
+if(!visualCss.includes('@media(max-width:1100px)')||!visualCss.includes('.vf-hero-grid,.vf-proof-grid,.vf-action-grid,.vf-apply .application-wrap{grid-template-columns:1fr}')) failures.push('visual-first.css: hero must collapse before its minimum grid tracks can overflow.');
 const homepage=fs.readFileSync(path.join(root,'site/index.html'),'utf8');
 for(const name of ['firstName','lastName','email','build','consent']){
   const rx=new RegExp(`<label[^>]*>[\\s\\S]*?name="${name}"[\\s\\S]*?<\\/label>`,'i');
