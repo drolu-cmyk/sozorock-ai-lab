@@ -1,13 +1,6 @@
 (() => {
   'use strict';
 
-  if (document.body.classList.contains('visual-first-home')) {
-    const motionStyles = document.createElement('link');
-    motionStyles.rel = 'stylesheet';
-    motionStyles.href = '/assets/css/motion-proof.css?v=20260808-1';
-    document.head.appendChild(motionStyles);
-  }
-
   const formStartedAt = new Date().toISOString();
   const forms = document.querySelectorAll('[data-application-form]');
   for (const form of forms) {
