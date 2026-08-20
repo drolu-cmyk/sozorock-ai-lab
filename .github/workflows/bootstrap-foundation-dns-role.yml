@@ -122,6 +122,8 @@ jobs:
           OUTCOME: ${{ steps.repair.outcome }}
           ROLE_ARN: ${{ steps.repair.outputs.role_arn }}
           ZONE_ID: ${{ steps.repair.outputs.zone_id }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          EXPECTED_SUBJECT: ${{ env.EXPECTED_SUBJECT }}
         shell: bash
         run: |
           set -euo pipefail
@@ -131,10 +133,3 @@ jobs:
           fi
           gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
           test "$OUTCOME" = "success"
-        env:
-          GH_TOKEN: ${{ github.token }}
-          OUTCOME: ${{ steps.repair.outcome }}
-          ROLE_ARN: ${{ steps.repair.outputs.role_arn }}
-          ZONE_ID: ${{ steps.repair.outputs.zone_id }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          EXPECTED_SUBJECT: ${{ env.EXPECTED_SUBJECT }}
