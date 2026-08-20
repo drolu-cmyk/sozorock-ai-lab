@@ -24,7 +24,7 @@ jobs:
       FOUNDATION_ROLE_NAME: GitHubActionsSozorockFoundationDnsRole
       FOUNDATION_POLICY_NAME: SozoRockFoundationParentDns
       ZONE_NAME: sozorockfoundation.org.
-      EXPECTED_SUBJECT: repo:drolu-cmyk/sozorock-foundation:ref:refs/heads/main
+      EXPECTED_SUBJECT: repo:drolu-cmyk@271617784/sozorock-foundation@1337104562:ref:refs/heads/main
     steps:
       - name: Assume existing trusted SozoRock AWS deployment role
         uses: aws-actions/configure-aws-credentials@v6
