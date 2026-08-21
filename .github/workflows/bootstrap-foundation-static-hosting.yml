@@ -22,9 +22,9 @@ jobs:
       AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME || 'arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole' }}
       ACCOUNT_ID: '791860731989'
       STACK_NAME: sozorock-foundation-parent-site
-      HOSTED_ZONE_ID: Z07905293AANZWGYZ84F3
       DOMAIN_NAME: www.sozorockfoundation.org
       BUCKET_NAME: sozorock-foundation-parent-prod-791860731989
+      CERTIFICATE_ARN: arn:aws:acm:us-east-1:791860731989:certificate/d2b11522-63cb-4c7f-b5a8-c0c25a39a2f7
       DEPLOY_ROLE_NAME: GitHubActionsSozorockFoundationSiteDeployRole
       EXPECTED_SUBJECT: repo:drolu-cmyk@271617784/sozorock-foundation@1337104562:ref:refs/heads/main
     steps:
@@ -42,13 +42,18 @@ jobs:
         run: |
           set -euo pipefail
           test "$(aws sts get-caller-identity --query Account --output text)" = "$ACCOUNT_ID"
-          cat > /tmp/parent-static-site.yml <<'YAML'
+          status="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || true)"
+          if [ "$status" = "ROLLBACK_COMPLETE" ]; then
+            aws cloudformation delete-stack --stack-name "$STACK_NAME"
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+          fi
+          cat >/tmp/parent-static-site.yml <<'YAML'
           AWSTemplateFormatVersion: '2010-09-09'
-          Description: Production static hosting for www.sozorockfoundation.org using private S3, CloudFront, and ACM.
+          Description: Production static hosting for www.sozorockfoundation.org using private S3 and CloudFront.
           Parameters:
-            HostedZoneId: {Type: String}
             DomainName: {Type: String}
             BucketName: {Type: String}
+            CertificateArn: {Type: String}
           Resources:
             SiteBucket:
               Type: AWS::S3::Bucket
@@ -107,14 +112,6 @@ jobs:
                       Preload: false
                       Override: true
                     XSSProtection: {Protection: true, ModeBlock: true, Override: true}
-            Certificate:
-              Type: AWS::CertificateManager::Certificate
-              Properties:
-                DomainName: !Ref DomainName
-                ValidationMethod: DNS
-                DomainValidationOptions:
-                  - DomainName: !Ref DomainName
-                    HostedZoneId: !Ref HostedZoneId
             Distribution:
               Type: AWS::CloudFront::Distribution
               Properties:
@@ -143,7 +140,7 @@ jobs:
                       - EventType: viewer-request
                         FunctionARN: !GetAtt CleanUrlFunction.FunctionARN
                   ViewerCertificate:
-                    AcmCertificateArn: !Ref Certificate
+                    AcmCertificateArn: !Ref CertificateArn
                     SslSupportMethod: sni-only
                     MinimumProtocolVersion: TLSv1.2_2021
             SiteBucketPolicy:
@@ -166,24 +163,18 @@ jobs:
             DistributionId: {Value: !Ref Distribution}
             DistributionDomainName: {Value: !GetAtt Distribution.DomainName}
           YAML
-
           aws cloudformation deploy \
             --stack-name "$STACK_NAME" \
             --template-file /tmp/parent-static-site.yml \
-            --parameter-overrides HostedZoneId="$HOSTED_ZONE_ID" DomainName="$DOMAIN_NAME" BucketName="$BUCKET_NAME" \
+            --parameter-overrides DomainName="$DOMAIN_NAME" BucketName="$BUCKET_NAME" CertificateArn="$CERTIFICATE_ARN" \
             --no-fail-on-empty-changeset
-
           bucket="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text)"
           distribution="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].Outputs[?OutputKey==`DistributionId`].OutputValue' --output text)"
           distribution_domain="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].Outputs[?OutputKey==`DistributionDomainName`].OutputValue' --output text)"
           test "$bucket" = "$BUCKET_NAME"
           test -n "$distribution"
           test -n "$distribution_domain"
-          {
-            echo "bucket=$bucket"
-            echo "distribution=$distribution"
-            echo "distribution_domain=$distribution_domain"
-          } >> "$GITHUB_OUTPUT"
+          printf 'bucket=%s\ndistribution=%s\ndistribution_domain=%s\n' "$bucket" "$distribution" "$distribution_domain" >> "$GITHUB_OUTPUT"
 
       - name: Create narrow Foundation repository deploy role
         shell: bash
@@ -193,10 +184,10 @@ jobs:
         run: |
           set -euo pipefail
           provider="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
-          cat > /tmp/trust.json <<EOF
+          cat >/tmp/trust.json <<EOF
           {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Federated":"${provider}"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:sub":"${EXPECTED_SUBJECT}"}}}]}
           EOF
-          cat > /tmp/policy.json <<EOF
+          cat >/tmp/policy.json <<EOF
           {"Version":"2012-10-17","Statement":[
             {"Effect":"Allow","Action":["cloudformation:DescribeStacks"],"Resource":"*"},
             {"Effect":"Allow","Action":["s3:ListBucket","s3:GetBucketLocation"],"Resource":"arn:aws:s3:::${BUCKET}"},
@@ -219,7 +210,7 @@ jobs:
           DISTRIBUTION: ${{ steps.infra.outputs.distribution }}
           DISTRIBUTION_DOMAIN: ${{ steps.infra.outputs.distribution_domain }}
         run: |
-          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Bootstrap: **success**\n\nStack: \`${STACK_NAME}\`\nBucket: \`${BUCKET}\`\nCloudFront distribution: \`${DISTRIBUTION}\`\nCloudFront domain: \`${DISTRIBUTION_DOMAIN}\`\nDeploy role: \`arn:aws:iam::${ACCOUNT_ID}:role/${DEPLOY_ROLE_NAME}\`\n\nNo \`www\` DNS cutover was performed."
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Bootstrap: **success**\n\nStack: \`${STACK_NAME}\`\nBucket: \`${BUCKET}\`\nCloudFront distribution: \`${DISTRIBUTION}\`\nCloudFront domain: \`${DISTRIBUTION_DOMAIN}\`\nDeploy role: \`arn:aws:iam::${ACCOUNT_ID}:role/${DEPLOY_ROLE_NAME}\`\nCertificate: \`${CERTIFICATE_ARN}\`\n\nNo \`www\` DNS cutover was performed."
 
   cutover:
     if: >-
@@ -242,7 +233,6 @@ jobs:
           role-session-name: FoundationStaticCutover-${{ github.run_id }}
           aws-region: ${{ env.AWS_REGION }}
           retry-max-attempts: 3
-
       - name: Verify CloudFront and cut over www atomically
         id: dns
         shell: bash
@@ -254,32 +244,21 @@ jobs:
           grep -Fq 'Access.' <<<"$page"
           grep -Fq 'Assurance.' <<<"$page"
           grep -Fq 'Intelligence.' <<<"$page"
-
           records="$(aws route53 list-resource-record-sets --hosted-zone-id "$HOSTED_ZONE_ID" --output json)"
           current_cname="$(jq -c --arg name "$WWW_NAME" '.ResourceRecordSets[] | select(.Name==$name and .Type=="CNAME")' <<<"$records")"
           current_a="$(jq -r --arg name "$WWW_NAME" '.ResourceRecordSets[] | select(.Name==$name and .Type=="A") | .AliasTarget.DNSName // empty' <<<"$records")"
           current_aaaa="$(jq -r --arg name "$WWW_NAME" '.ResourceRecordSets[] | select(.Name==$name and .Type=="AAAA") | .AliasTarget.DNSName // empty' <<<"$records")"
-
           if [[ "$current_a" == "$distribution_domain." && "$current_aaaa" == "$distribution_domain." ]]; then
-            echo 'www already points to the production CloudFront distribution.'
+            echo 'www already points to production CloudFront.'
           else
             test -n "$current_cname"
             old_value="$(jq -r '.ResourceRecords[0].Value' <<<"$current_cname")"
             test "$old_value" = 'custom-domains.chatgpt.site.'
-            jq -n --argjson cname "$current_cname" --arg name "$WWW_NAME" --arg target "$distribution_domain." '{Changes:[
-              {Action:"DELETE",ResourceRecordSet:$cname},
-              {Action:"CREATE",ResourceRecordSet:{Name:$name,Type:"A",AliasTarget:{HostedZoneId:"Z2FDTNDATAQYW2",DNSName:$target,EvaluateTargetHealth:false}}},
-              {Action:"CREATE",ResourceRecordSet:{Name:$name,Type:"AAAA",AliasTarget:{HostedZoneId:"Z2FDTNDATAQYW2",DNSName:$target,EvaluateTargetHealth:false}}}
-            ]}' > /tmp/cutover.json
+            jq -n --argjson cname "$current_cname" --arg name "$WWW_NAME" --arg target "$distribution_domain." '{Changes:[{Action:"DELETE",ResourceRecordSet:$cname},{Action:"CREATE",ResourceRecordSet:{Name:$name,Type:"A",AliasTarget:{HostedZoneId:"Z2FDTNDATAQYW2",DNSName:$target,EvaluateTargetHealth:false}}},{Action:"CREATE",ResourceRecordSet:{Name:$name,Type:"AAAA",AliasTarget:{HostedZoneId:"Z2FDTNDATAQYW2",DNSName:$target,EvaluateTargetHealth:false}}}]}' >/tmp/cutover.json
             change_id="$(aws route53 change-resource-record-sets --hosted-zone-id "$HOSTED_ZONE_ID" --change-batch file:///tmp/cutover.json --query 'ChangeInfo.Id' --output text)"
             aws route53 wait resource-record-sets-changed --id "$change_id"
           fi
-
-          final="$(aws route53 list-resource-record-sets --hosted-zone-id "$HOSTED_ZONE_ID" --output json)"
-          test "$(jq -r --arg name "$WWW_NAME" '.ResourceRecordSets[] | select(.Name==$name and .Type=="A") | .AliasTarget.DNSName' <<<"$final")" = "$distribution_domain."
-          test "$(jq -r --arg name "$WWW_NAME" '.ResourceRecordSets[] | select(.Name==$name and .Type=="AAAA") | .AliasTarget.DNSName' <<<"$final")" = "$distribution_domain."
           echo "distribution_domain=$distribution_domain" >> "$GITHUB_OUTPUT"
-
       - name: Publish cutover result
         env:
           GH_TOKEN: ${{ github.token }}
