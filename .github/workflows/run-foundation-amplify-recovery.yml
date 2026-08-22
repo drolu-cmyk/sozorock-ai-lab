@@ -1,0 +1,96 @@
+name: Run Foundation Amplify recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/run-foundation-amplify-recovery.yml
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: us-east-1
+      AWS_ROLE_TO_ASSUME: arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole
+      RECOVERY_BRANCH: ops/foundation-amplify-recovered-assets
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: FoundationAmplifyRecovery-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          retry-max-attempts: 3
+      - name: Recover parent visuals from old Amplify branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf foundation-recovery-assets
+          mkdir -p foundation-recovery-assets/leadership
+
+          valid_image() {
+            local file="$1"
+            [ -s "$file" ] && [ "$(wc -c < "$file")" -gt 2500 ] || return 1
+            case "$(file -b --mime-type "$file")" in image/jpeg|image/png|image/webp) return 0;; *) return 1;; esac
+          }
+          fetch_image() {
+            local url="$1" out="$2" tmp="${out}.tmp"
+            rm -f "$tmp" "$out"
+            curl -fL --retry 3 --connect-timeout 15 --max-time 45 "$url" -o "$tmp"
+            valid_image "$tmp"
+            mv "$tmp" "$out"
+          }
+
+          selected=''
+          while IFS=$'\t' read -r app_id app_name default_domain; do
+            [ -n "$app_id" ] || continue
+            while read -r branch; do
+              [ -n "$branch" ] || continue
+              origin="https://${branch}.${default_domain}"
+              html="$(curl -fLsS --retry 2 --connect-timeout 15 --max-time 30 "${origin}/about-us" || true)"
+              if grep -Fq 'Nike Oye' <<<"$html" && grep -Fq 'Oluwabiyi Adeyemo' <<<"$html"; then selected="$origin"; break 2; fi
+            done < <(aws amplify list-branches --app-id "$app_id" --query 'branches[].branchName' --output text | tr '\t' '\n')
+          done < <(aws amplify list-apps --query 'apps[].[appId,name,defaultDomain]' --output text)
+
+          [ -n "$selected" ] || { echo 'Old Foundation Amplify branch not found' >&2; exit 1; }
+          echo "Recovered from $selected"
+
+          fetch_image "${selected}/m1.png" foundation-recovery-assets/leadership/nike-oye.png
+          fetch_image "${selected}/m2.png" foundation-recovery-assets/leadership/anthony-abraham.png
+          fetch_image "${selected}/m3.png" foundation-recovery-assets/leadership/jordan-hare.png
+          fetch_image "${selected}/m4.png" foundation-recovery-assets/leadership/oluwabiyi-adeyemo.png
+
+          extract_cover() {
+            local route="$1" out="$2" html src url
+            html="$(curl -fLsS --retry 3 --connect-timeout 15 --max-time 45 "${selected}${route}")"
+            src="$(printf '%s' "$html" | python3 -c '
+import html,re,sys
+s=sys.stdin.read()
+for p in [r"<img[^>]+src=[\"\x27]([^\"\x27]+)[\"\x27][^>]+(?:alt|class)=[\"\x27][^\"\x27]*(?:report cover|book cover|publication cover|cover)[^\"\x27]*[\"\x27]",r"<img[^>]+(?:alt|class)=[\"\x27][^\"\x27]*(?:report cover|book cover|publication cover|cover)[^\"\x27]*[\"\x27][^>]+src=[\"\x27]([^\"\x27]+)"]:
+ m=re.search(p,s,re.I)
+ if m: print(html.unescape(m.group(1))); break
+')"
+            [ -n "$src" ] || return 1
+            case "$src" in http://*|https://*) url="$src";; /*) url="${selected}${src}";; *) url="${selected}/${src}";; esac
+            fetch_image "$url" "$out"
+          }
+
+          extract_cover '/publication/rrg-v1-2025' foundation-recovery-assets/rrg-cover.jpg || fetch_image 'https://covers.openlibrary.org/b/isbn/9798993647715-L.jpg?default=false' foundation-recovery-assets/rrg-cover.jpg
+          extract_cover '/publication/rebs-v1-2025' foundation-recovery-assets/rebs-cover.jpg || fetch_image 'https://covers.openlibrary.org/b/isbn/9798993647708-L.jpg?default=false' foundation-recovery-assets/rebs-cover.jpg
+
+          for f in foundation-recovery-assets/leadership/*.png foundation-recovery-assets/*-cover.jpg; do valid_image "$f"; file "$f"; sha256sum "$f"; done
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C "$RECOVERY_BRANCH"
+          git add foundation-recovery-assets/
+          git commit -m 'ops: stage recovered Foundation visual assets'
+          git push --force origin "$RECOVERY_BRANCH"
