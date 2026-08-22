@@ -1,0 +1,166 @@
+name: Recover Foundation assets from Amplify
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  id-token: write
+  contents: write
+  issues: write
+
+jobs:
+  recover:
+    if: >-
+      github.repository == 'drolu-cmyk/sozorock-ai-lab' &&
+      github.event.issue.user.login == 'drolu-cmyk' &&
+      github.event.issue.title == 'recover-foundation-amplify-assets'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: us-east-1
+      AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME || 'arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole' }}
+      RECOVERY_BRANCH: ops/foundation-amplify-recovered-assets
+    steps:
+      - name: Check out AI Lab repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Assume existing trusted AWS role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: FoundationAmplifyRecovery-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          retry-max-attempts: 3
+
+      - name: Discover old Amplify parent and recover visuals
+        id: recover
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf foundation-recovery-assets
+          mkdir -p foundation-recovery-assets/leadership
+
+          apps="$(aws amplify list-apps --output json)"
+          printf '%s' "$apps" >/tmp/amplify-apps.json
+
+          mapfile -t app_rows < <(jq -r '.apps[] | [.appId,.name,.defaultDomain] | @tsv' /tmp/amplify-apps.json)
+          if [ "${#app_rows[@]}" -eq 0 ]; then
+            echo 'No Amplify apps visible to the trusted AWS role.' >&2
+            exit 1
+          fi
+
+          valid_image() {
+            local file="$1"
+            [ -s "$file" ] || return 1
+            [ "$(wc -c < "$file")" -gt 2500 ] || return 1
+            case "$(file -b --mime-type "$file")" in
+              image/jpeg|image/png|image/webp) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          origins=()
+          for row in "${app_rows[@]}"; do
+            IFS=$'\t' read -r app_id app_name default_domain <<<"$row"
+            mapfile -t branches < <(aws amplify list-branches --app-id "$app_id" --query 'branches[].branchName' --output text | tr '\t' '\n')
+            for branch in "${branches[@]}"; do
+              [ -n "$branch" ] || continue
+              origins+=("https://${branch}.${default_domain}")
+            done
+          done
+
+          # Prefer an origin that actually contains the old Foundation leadership page.
+          selected=''
+          for origin in "${origins[@]}"; do
+            html="$(curl -fLsS --retry 2 --connect-timeout 15 --max-time 35 "${origin}/about-us" || true)"
+            if grep -Fq 'Nike Oye' <<<"$html" && grep -Fq 'Oluwabiyi Adeyemo' <<<"$html"; then
+              selected="$origin"
+              printf '%s' "$html" >/tmp/about.html
+              break
+            fi
+          done
+          if [ -z "$selected" ]; then
+            echo 'Could not identify the old Foundation Amplify branch.' >&2
+            printf 'Amplify origins checked:\n%s\n' "${origins[*]}" >&2
+            exit 1
+          fi
+          echo "Selected old parent origin: $selected"
+          echo "origin=$selected" >> "$GITHUB_OUTPUT"
+
+          recover_exact() {
+            local source="$1" destination="$2" tmp="${destination}.tmp"
+            rm -f "$tmp" "$destination"
+            curl -fL --retry 3 --connect-timeout 15 --max-time 45 "$source" -o "$tmp"
+            valid_image "$tmp"
+            mv "$tmp" "$destination"
+          }
+
+          recover_exact "${selected}/m1.png" foundation-recovery-assets/leadership/nike-oye.png
+          recover_exact "${selected}/m2.png" foundation-recovery-assets/leadership/anthony-abraham.png
+          recover_exact "${selected}/m3.png" foundation-recovery-assets/leadership/jordan-hare.png
+          recover_exact "${selected}/m4.png" foundation-recovery-assets/leadership/oluwabiyi-adeyemo.png
+
+          recover_page_cover() {
+            local page_path="$1" destination="$2" html src
+            html="$(curl -fLsS --retry 3 --connect-timeout 15 --max-time 45 "${selected}${page_path}")"
+            src="$(printf '%s' "$html" | python3 -c '
+import html,re,sys
+s=sys.stdin.read()
+# Prefer cover-like images, then OG image.
+patterns=[
+ r"<img[^>]+(?:alt|class)=[\"\x27][^\"\x27]*(?:cover|publication)[^\"\x27]*[\"\x27][^>]+src=[\"\x27]([^\"\x27]+)",
+ r"<img[^>]+src=[\"\x27]([^\"\x27]+)[\"\x27][^>]+(?:alt|class)=[\"\x27][^\"\x27]*(?:cover|publication)[^\"\x27]*[\"\x27]",
+ r"<meta[^>]+property=[\"\x27]og:image[\"\x27][^>]+content=[\"\x27]([^\"\x27]+)"
+]
+for p in patterns:
+ m=re.search(p,s,re.I)
+ if m:
+  print(html.unescape(m.group(1))); break
+')"
+            [ -n "$src" ] || return 1
+            case "$src" in
+              http://*|https://*) url="$src" ;;
+              /*) url="${selected}${src}" ;;
+              *) url="${selected}/${src}" ;;
+            esac
+            recover_exact "$url" "$destination"
+          }
+
+          if ! recover_page_cover '/publication/rrg-v1-2025' foundation-recovery-assets/rrg-cover.jpg; then
+            recover_exact 'https://covers.openlibrary.org/b/isbn/9798993647715-L.jpg?default=false' foundation-recovery-assets/rrg-cover.jpg
+          fi
+          if ! recover_page_cover '/publication/rebs-v1-2025' foundation-recovery-assets/rebs-cover.jpg; then
+            recover_exact 'https://covers.openlibrary.org/b/isbn/9798993647708-L.jpg?default=false' foundation-recovery-assets/rebs-cover.jpg
+          fi
+
+          for file in foundation-recovery-assets/leadership/*.png foundation-recovery-assets/*-cover.jpg; do
+            valid_image "$file"
+            file "$file"
+            sha256sum "$file"
+          done
+
+      - name: Commit recovered binaries for transfer
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C "$RECOVERY_BRANCH"
+          git add foundation-recovery-assets/
+          git commit -m 'ops: stage recovered Foundation visual assets'
+          git push --force origin "$RECOVERY_BRANCH"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish recovery receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ORIGIN: ${{ steps.recover.outputs.origin }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Foundation Amplify visual recovery: **SUCCESS**\n\nOld parent origin: \`${ORIGIN}\`\nRecovery branch: \`${RECOVERY_BRANCH}\`\nCommit: \`${SHA}\`\n\nRecovered the four leadership portraits plus RRG and REBS cover files without changing Amplify or any product subdomain."
