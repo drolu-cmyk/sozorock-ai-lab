@@ -1,0 +1,23 @@
+name: Private runner probe
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    if: github.repository == 'drolu-cmyk/sozorock-ai-lab'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Confirm private repository runner execution
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        shell: bash
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Private AI Lab Actions runner **started successfully** for issue-triggered workflow run \`${GITHUB_RUN_ID}\`. This probe makes no AWS or repository mutation beyond this receipt."
