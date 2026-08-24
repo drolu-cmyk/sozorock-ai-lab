@@ -10,6 +10,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  issues: write
 
 env:
   AWS_REGION: us-east-1
@@ -20,6 +21,7 @@ env:
   FOUNDATION_ZONE_ID: Z07905293AANZWGYZ84F3
   LEGACY_HEALTH_APP_ID: d3uqnxmsmefokf
   LEGACY_HEALTH_DOMAIN: sozorockhealth.com
+  RECOVERY_ISSUE: '76'
 
 jobs:
   recover:
@@ -33,6 +35,13 @@ jobs:
         with:
           ref: main
           persist-credentials: false
+
+      - name: Record runner start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment "$RECOVERY_ISSUE" --repo "$GITHUB_REPOSITORY" --body "Production recovery runner **started** for commit \`${GITHUB_SHA}\` (run \`${GITHUB_RUN_ID}\`). No production result is claimed until the final verification receipt is posted."
 
       - name: Assume trusted AI Lab production role
         id: aws
@@ -245,14 +254,19 @@ jobs:
 
       - name: Publish recovery result
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          grant='${{ steps.grant.outcome }}'
+          health='${{ steps.health.outcome }}'
           {
             echo
             echo '### Recovery outcomes'
-            echo "- Foundation IAM prerequisites: ${{ steps.grant.outcome }}"
-            echo "- Retired Health Amplify recovery: ${{ steps.health.outcome }}"
+            echo "- Foundation IAM prerequisites: ${grant}"
+            echo "- Retired Health Amplify recovery: ${health}"
           } >> "$GITHUB_STEP_SUMMARY"
+          gh issue comment "$RECOVERY_ISSUE" --repo "$GITHUB_REPOSITORY" --body "Production recovery run \`${GITHUB_RUN_ID}\` finished. Foundation IAM prerequisites: **${grant}**. Retired Health Amplify recovery: **${health}**. Health Amplify branch: \`${{ steps.health.outputs.branch }}\`; job: \`${{ steps.health.outputs.job_id }}\`. Production is complete only where the live verification step reported success."
 
       - name: Require both recoveries
         if: always()
