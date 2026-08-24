@@ -16,8 +16,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Generate policy pages
@@ -62,8 +62,8 @@ jobs:
       APPLICATION_RATE_LIMIT: ${{ vars.APPLICATION_RATE_LIMIT || '5' }}
       APPLICATION_BURST_LIMIT: ${{ vars.APPLICATION_BURST_LIMIT || '10' }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Validate core deployment configuration
