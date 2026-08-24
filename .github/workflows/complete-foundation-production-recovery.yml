@@ -1,0 +1,262 @@
+name: Complete Foundation production recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/complete-foundation-production-recovery.yml
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::791860731989:role/GitHubActionsSozorockAiLabDeployRole
+  ACCOUNT_ID: '791860731989'
+  FOUNDATION_DEPLOY_ROLE: GitHubActionsSozorockFoundationSiteDeployRole
+  AGENT_LAMBDA_ROLE: SozoRockFoundationAgentsLambdaRole
+  FOUNDATION_ZONE_ID: Z07905293AANZWGYZ84F3
+  LEGACY_HEALTH_APP_ID: d3uqnxmsmefokf
+  LEGACY_HEALTH_DOMAIN: sozorockhealth.com
+
+jobs:
+  recover:
+    if: github.repository == 'drolu-cmyk/sozorock-ai-lab' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Assume trusted AI Lab production role
+        id: aws
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: FoundationProductionRecovery-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          retry-max-attempts: 3
+
+      - name: Add only the missing Foundation permissions
+        id: grant
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "$ACCOUNT_ID"
+
+          cat > /tmp/agent-lambda-trust.json <<'EOF'
+          {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}
+          EOF
+
+          if aws iam get-role --role-name "$AGENT_LAMBDA_ROLE" >/dev/null 2>&1; then
+            aws iam update-assume-role-policy \
+              --role-name "$AGENT_LAMBDA_ROLE" \
+              --policy-document file:///tmp/agent-lambda-trust.json
+          else
+            aws iam create-role \
+              --role-name "$AGENT_LAMBDA_ROLE" \
+              --description 'Runtime role for the private SozoRock Foundation agent control plane' \
+              --assume-role-policy-document file:///tmp/agent-lambda-trust.json >/dev/null
+          fi
+
+          cat > /tmp/agent-lambda-policy.json <<EOF
+          {"Version":"2012-10-17","Statement":[
+            {"Sid":"WriteOwnLogs","Effect":"Allow","Action":["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],"Resource":"arn:aws:logs:${AWS_REGION}:${ACCOUNT_ID}:*"}
+          ]}
+          EOF
+          aws iam put-role-policy \
+            --role-name "$AGENT_LAMBDA_ROLE" \
+            --policy-name SozoRockFoundationAgentsRuntime \
+            --policy-document file:///tmp/agent-lambda-policy.json
+
+          cat > /tmp/foundation-addon-policy.json <<EOF
+          {"Version":"2012-10-17","Statement":[
+            {
+              "Sid":"RequestOnlyFoundationApexCertificate",
+              "Effect":"Allow",
+              "Action":"acm:RequestCertificate",
+              "Resource":"*",
+              "Condition":{
+                "ForAllValues:StringEquals":{"acm:DomainNames":["sozorockfoundation.org"]},
+                "StringEquals":{"acm:ValidationMethod":"DNS","aws:RequestedRegion":"${AWS_REGION}"}
+              }
+            },
+            {
+              "Sid":"InspectFoundationCertificates",
+              "Effect":"Allow",
+              "Action":["acm:ListCertificates"],
+              "Resource":"*"
+            },
+            {
+              "Sid":"ReadFoundationCertificates",
+              "Effect":"Allow",
+              "Action":["acm:DescribeCertificate","acm:GetCertificate","acm:ListTagsForCertificate"],
+              "Resource":"arn:aws:acm:${AWS_REGION}:${ACCOUNT_ID}:certificate/*"
+            },
+            {
+              "Sid":"ValidateAndCutOverOnlyFoundationApex",
+              "Effect":"Allow",
+              "Action":["route53:ListResourceRecordSets","route53:ChangeResourceRecordSets"],
+              "Resource":"arn:aws:route53:::hostedzone/${FOUNDATION_ZONE_ID}",
+              "Condition":{
+                "ForAllValues:StringLike":{"route53:ChangeResourceRecordSetsNormalizedRecordNames":["sozorockfoundation.org","_*.sozorockfoundation.org"]},
+                "ForAllValues:StringEquals":{
+                  "route53:ChangeResourceRecordSetsRecordTypes":["A","CNAME"],
+                  "route53:ChangeResourceRecordSetsActions":["UPSERT"]
+                }
+              }
+            },
+            {
+              "Sid":"WaitForFoundationDns",
+              "Effect":"Allow",
+              "Action":"route53:GetChange",
+              "Resource":"arn:aws:route53:::change/*"
+            },
+            {
+              "Sid":"DeployOnlyFoundationAgentLambda",
+              "Effect":"Allow",
+              "Action":["lambda:CreateFunction","lambda:GetFunction","lambda:GetFunctionConfiguration","lambda:UpdateFunctionCode","lambda:UpdateFunctionConfiguration","lambda:AddPermission","lambda:RemovePermission","lambda:InvokeFunction","lambda:TagResource","lambda:UntagResource"],
+              "Resource":"arn:aws:lambda:${AWS_REGION}:${ACCOUNT_ID}:function:SozoRockFoundationAgents"
+            },
+            {
+              "Sid":"PassOnlyFoundationAgentRuntimeRole",
+              "Effect":"Allow",
+              "Action":"iam:PassRole",
+              "Resource":"arn:aws:iam::${ACCOUNT_ID}:role/${AGENT_LAMBDA_ROLE}"
+            },
+            {
+              "Sid":"ManageFoundationAgentHttpApi",
+              "Effect":"Allow",
+              "Action":"apigateway:*",
+              "Resource":"arn:aws:apigateway:${AWS_REGION}::/apis*"
+            }
+          ]}
+          EOF
+
+          aws iam put-role-policy \
+            --role-name "$FOUNDATION_DEPLOY_ROLE" \
+            --policy-name SozoRockFoundationAgenticRecovery \
+            --policy-document file:///tmp/foundation-addon-policy.json
+
+          for _ in $(seq 1 30); do
+            if aws iam get-role --role-name "$AGENT_LAMBDA_ROLE" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 2
+          done
+          aws iam get-role --role-name "$AGENT_LAMBDA_ROLE" >/dev/null
+          echo 'Foundation apex and agent-runtime prerequisites are ready.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rebuild and verify retired Health domains
+        id: health
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$(aws amplify get-app --app-id "$LEGACY_HEALTH_APP_ID" --output json)"
+          repository="$(jq -r '.app.repository // ""' <<<"$app")"
+          if [[ "$repository" != *"agentic-ai-sozorock-health"* ]]; then
+            echo "Refusing unexpected Amplify repository: $repository" >&2
+            exit 1
+          fi
+
+          branches="$(aws amplify list-branches --app-id "$LEGACY_HEALTH_APP_ID" --output json)"
+          if jq -e '.branches[]? | select(.branchName == "main")' <<<"$branches" >/dev/null; then
+            branch='main'
+          else
+            branch="$(jq -r '.branches[]? | select(.stage == "PRODUCTION") | .branchName' <<<"$branches" | head -n1)"
+          fi
+          test -n "$branch"
+          echo "Using Amplify branch: $branch" >> "$GITHUB_STEP_SUMMARY"
+
+          domain="$(aws amplify get-domain-association \
+            --app-id "$LEGACY_HEALTH_APP_ID" \
+            --domain-name "$LEGACY_HEALTH_DOMAIN" \
+            --output json)"
+
+          settings="$(jq -c --arg branch "$branch" '[.domainAssociation.subDomains[].subDomainSetting | if (.prefix == "" or .prefix == "www") then .branchName = $branch else . end]' <<<"$domain")"
+          apex_branch="$(jq -r '.domainAssociation.subDomains[]? | select(.subDomainSetting.prefix == "") | .subDomainSetting.branchName' <<<"$domain" | head -n1)"
+          www_branch="$(jq -r '.domainAssociation.subDomains[]? | select(.subDomainSetting.prefix == "www") | .subDomainSetting.branchName' <<<"$domain" | head -n1)"
+          if [[ "$apex_branch" != "$branch" || "$www_branch" != "$branch" ]]; then
+            aws amplify update-domain-association \
+              --app-id "$LEGACY_HEALTH_APP_ID" \
+              --domain-name "$LEGACY_HEALTH_DOMAIN" \
+              --sub-domain-settings "$settings" >/dev/null
+          fi
+
+          job_id="$(aws amplify start-job \
+            --app-id "$LEGACY_HEALTH_APP_ID" \
+            --branch-name "$branch" \
+            --job-type RELEASE \
+            --job-reason 'Deploy permanent redirect from retired Health domains' \
+            --query 'jobSummary.jobId' \
+            --output text)"
+          test -n "$job_id"
+
+          build_status=''
+          for _ in $(seq 1 120); do
+            build_status="$(aws amplify get-job \
+              --app-id "$LEGACY_HEALTH_APP_ID" \
+              --branch-name "$branch" \
+              --job-id "$job_id" \
+              --query 'job.summary.status' \
+              --output text)"
+            case "$build_status" in
+              SUCCEED) break ;;
+              FAILED|CANCELLED) echo "Amplify build ended: $build_status" >&2; exit 1 ;;
+            esac
+            sleep 10
+          done
+          test "$build_status" = 'SUCCEED'
+
+          root_expected='https://health.sozorockfoundation.org/'
+          cbcap_expected='https://cbcap.sozorockfoundation.org/'
+          for host in sozorockhealth.com www.sozorockhealth.com; do
+            root_verified=0
+            for _ in $(seq 1 60); do
+              headers="$(curl --silent --show-error --head --max-time 20 "https://${host}/" || true)"
+              status="$(awk '/^HTTP\// {code=$2} END {print code}' <<<"$headers")"
+              location="$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, ""); sub(/^location:[[:space:]]*/, ""); value=$0} END {print value}' <<<"$headers")"
+              if [[ "$status" = '308' && "$location" = "$root_expected" ]]; then
+                root_verified=1
+                break
+              fi
+              sleep 10
+            done
+            test "$root_verified" = '1'
+          done
+
+          cb_headers="$(curl --silent --show-error --head --max-time 20 'https://sozorockhealth.com/cb-cap')"
+          cb_status="$(awk '/^HTTP\// {code=$2} END {print code}' <<<"$cb_headers")"
+          cb_location="$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, ""); sub(/^location:[[:space:]]*/, ""); value=$0} END {print value}' <<<"$cb_headers")"
+          test "$cb_status" = '308'
+          test "$cb_location" = "$cbcap_expected"
+
+          echo "Legacy Health redirect verified after Amplify job ${job_id}." >> "$GITHUB_STEP_SUMMARY"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
+
+      - name: Publish recovery result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo
+            echo '### Recovery outcomes'
+            echo "- Foundation IAM prerequisites: ${{ steps.grant.outcome }}"
+            echo "- Retired Health Amplify recovery: ${{ steps.health.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Require both recoveries
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.grant.outcome }}" = 'success'
+          test "${{ steps.health.outcome }}" = 'success'
